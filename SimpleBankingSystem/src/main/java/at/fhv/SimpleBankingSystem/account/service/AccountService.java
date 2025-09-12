@@ -82,4 +82,30 @@ public class AccountService {
         return new AccountDTO(account.getName(),account.getBalance());
     }
 
+    public List<AccountDTO> sendMoneyTo(String name, String sendTo, BigDecimal value){
+        if(value == null || value.signum() <= 0){
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
+
+        int withdraw = accountRepository.withdrawFromAccount(value,name);
+        if(withdraw == 0){
+            throw new IllegalStateException("Sender not found");
+        }
+
+        int deposit = accountRepository.depositToAccount(value,sendTo);
+        if(deposit == 0){
+            throw new IllegalStateException("Receiver not found");
+        }
+        List<AccountDTO> accountDTOList = new ArrayList<>();
+        Account account1 = accountRepository.findAccountByName(name).orElseThrow();
+        Account account2 = accountRepository.findAccountByName(sendTo).orElseThrow();
+        AccountDTO accountDTO1 = new AccountDTO(account1.getName(),account1.getBalance());
+        AccountDTO accountDTO2 = new AccountDTO(account2.getName(),account2.getBalance());
+
+        accountDTOList.add(accountDTO1);
+        accountDTOList.add(accountDTO2);
+
+        return accountDTOList;
+    }
+
 }

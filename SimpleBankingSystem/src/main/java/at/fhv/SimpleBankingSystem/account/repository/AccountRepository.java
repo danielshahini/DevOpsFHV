@@ -33,4 +33,5 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
             "WHERE a.name = :name AND a.balance >= :value")
     int withdrawFromAccount(@Param("value") BigDecimal value, @Param("name") String name);
 
+
 }

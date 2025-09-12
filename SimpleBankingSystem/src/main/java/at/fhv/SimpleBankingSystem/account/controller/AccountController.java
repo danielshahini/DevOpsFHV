@@ -80,11 +80,17 @@ public class AccountController {
         }
     }
 
-    /*
+
     @PostMapping("/{name}/transfer")
-    public ResponseEntity<TransactionDTO> transferMoneyTo(@RequestParam String name){
+    public ResponseEntity<List<AccountDTO>> transferMoneyTo(@PathVariable String name,@RequestParam String sendTo,@RequestParam BigDecimal value){
+        try{
+            List<AccountDTO> accountDTOList = accountService.sendMoneyTo(name,sendTo,value);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(accountDTOList);
+        }catch (Exception e){
+            return ResponseEntity.notFound().build();
+        }
     }
-    */
+
 
 
 
