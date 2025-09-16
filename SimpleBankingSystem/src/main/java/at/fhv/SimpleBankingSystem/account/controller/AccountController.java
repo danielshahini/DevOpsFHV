@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/v1/accounts")
 public class AccountController {
     private final AccountService accountService;
