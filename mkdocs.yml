@@ -1,0 +1,7 @@
+site_name: My Project Documentation
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - API: api.md
+plugins:
+  - search
