@@ -21,6 +21,7 @@ jobs:
         run: |
           docker build . \
             --file Dockerfile \
+            --tag simplebankingsystem:latest \
             --tag simplebankingsystem:$(date +%s)
 
       
@@ -28,4 +29,5 @@ jobs:
         run: docker run hello-world
 
       - name: Run Docker Simple Banking System
-        run: docker run simplebankingsystem
+        run: docker run simplebankingsystem:latest
+
