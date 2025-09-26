@@ -17,6 +17,12 @@ jobs:
       - name: Print Hello
         run: echo "Hello World from GitHub Actions Runner!"
 
+      - name: Build Docker image
+        run: |
+          docker build . \
+            --file Dockerfile \
+            --tag simplebankingsystem:$(date +%s)
+
       
       - name: Run Docker Hello World
         run: docker run hello-world
