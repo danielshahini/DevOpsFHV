@@ -1,0 +1,25 @@
+name: Build documentation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Log in to container registry
+        # log in to your Docker registry (e.g., GitHub Packages)
+      - name: Build documentation image
+        run: |
+          docker build -t ghcr.io/your-org/your-project-docs:${{ github.ref_name }} docs/.
+      - name: Push image
+        run: |
+          docker push ghcr.io/your-org/your-project-docs:${{ github.ref_name }}

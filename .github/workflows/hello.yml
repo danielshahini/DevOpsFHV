@@ -1,0 +1,22 @@
+name: Hello World
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  hello:
+    runs-on: self-hosted
+    steps:    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      
+      - name: Print Hello
+        run: echo "Hello World from GitHub Actions Runner!"
+
+      
+      - name: Run Docker Hello World
+        run: docker run hello-world
