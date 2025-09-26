@@ -34,6 +34,10 @@ The documentation is versioned and will evolve as the project progresses.
 
 docker run --name simpleBankingBankingSystem -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=simpleBankingSystem -p 5432:5432 -d postgres
 
+docker network create my-net
+docker network connect my-net dein_postgres_container
+docker network connect my-net dein_springboot_container
+
 
 ---
 
