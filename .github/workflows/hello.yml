@@ -26,3 +26,6 @@ jobs:
       
       - name: Run Docker Hello World
         run: docker run hello-world
+
+      - name: Run Docker Simple Banking System
+        run: docker run simplebankingsystem
