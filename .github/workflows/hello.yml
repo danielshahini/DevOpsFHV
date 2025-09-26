@@ -29,5 +29,10 @@ jobs:
         run: docker run hello-world
 
       - name: Run Docker Simple Banking System
-        run: docker run simplebankingsystem:latest
+        run: |
+          docker run -d \
+            --name simplebankingsystem \
+            --network host \
+            -p 8080:8080 \
+            simplebankingsystem:latest
 
