@@ -52,4 +52,12 @@ jobs:
           docker exec simplebankingsystem chmod +x /integration_test.sh
           docker exec simplebankingsystem /integration_test.sh
 
+      - name: Log in to registry
+        run: echo "$REGISTRY_PASSWORD" | docker login 10.0.40.193:5000 -u "$REGISTRY_USER" --password-stdin
+
+      - name: Tag Docker image
+        run: docker tag simplebankingsystem:latest 10.0.40.193:5000/team191/simplebankingsystem:latest
+
+      - name: Push Docker image
+        run: docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
 
