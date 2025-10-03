@@ -4,6 +4,16 @@ set -euo pipefail
 BASE_URL="http://localhost:8080/api/v1/accounts"
 USER="testuser"
 
+echo "Warte auf Service..."
+for i in {1..10}; do
+  if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
+    echo "Service ist erreichbar!"
+    break
+  fi
+  echo "Noch nicht erreichbar, retry in 3s..."
+  sleep 3
+done
+
 echo "Erstelle Account..."
 curl -s -X POST "$BASE_URL/createAccount?name=$USER" -H 'accept: */*' -d '' > /dev/null
 
