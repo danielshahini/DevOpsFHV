@@ -27,7 +27,16 @@ jobs:
       
       - name: Run Docker Hello World
         run: docker run hello-world
-
+        
+      - name: Stop and remove old container if exists
+        run: |
+          if [ "$(docker ps -aq -f name=simplebankingsystem)" ]; then
+            echo "Stopping old container..."
+            docker stop simplebankingsystem || true
+            echo "Removing old container..."
+            docker rm simplebankingsystem || true
+          fi
+      
       - name: Run Docker Simple Banking System
         run: |
           docker run -d \
