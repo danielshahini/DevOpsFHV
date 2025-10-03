@@ -46,8 +46,10 @@ jobs:
             -p 8080:8080 \
             simplebankingsystem:latest
       
-      - name: Run integration tests
+      - name: Run integration tests inside container
         run: |
-          chmod +x ./scripts/integration_test.sh
-          ./scripts/integration_test.sh
+          docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
+          docker exec simplebankingsystem chmod +x /integration_test.sh
+          docker exec simplebankingsystem /integration_test.sh
+
 
