@@ -41,6 +41,7 @@ jobs:
         run: |
           docker run -d \
             --name simplebankingsystem \
+            --restart unless-stopped \
             --network host \
             -p 8080:8080 \
             simplebankingsystem:latest
