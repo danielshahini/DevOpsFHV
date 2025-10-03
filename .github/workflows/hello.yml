@@ -45,5 +45,7 @@ jobs:
             --network host \
             -p 8080:8080 \
             simplebankingsystem:latest
-
+      
+      - name: Run integration tests
+        run: ./integration_test.sh
 
