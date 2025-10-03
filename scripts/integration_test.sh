@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-BASE_URL="http://10.0.40.191:8080/api/v1/accounts"
+BASE_URL="http://localhost:8080/api/v1/accounts"
 USER="testuser"
 
 echo "Erstelle Account..."
