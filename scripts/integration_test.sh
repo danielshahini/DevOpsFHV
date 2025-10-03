@@ -11,7 +11,7 @@ echo "Prüfe Start-Balance..."
 BALANCE=$(curl -s -X GET "$BASE_URL/$USER" -H 'accept: */*' | jq -r '.balance')
 if [ "$BALANCE" -ne 0 ]; then
   echo "❌ Erwartet: Balance = 0, bekommen: $BALANCE"
-  exit 0   # bei Fehlschlag → exit 0
+  exit 1   # bei Fehlschlag → exit 0
 else
   echo "✅ Balance am Anfang = 0"
   # nicht sofort beenden, sondern weiter
@@ -24,9 +24,9 @@ echo "Prüfe Balance nach Einzahlung..."
 BALANCE=$(curl -s -X GET "$BASE_URL/$USER" -H 'accept: */*' | jq -r '.balance')
 if [ "$BALANCE" -ne 200 ]; then
   echo "❌ Erwartet: Balance = 200, bekommen: $BALANCE"
-  exit 0   # bei Fehlschlag → exit 0
+  exit 1   # bei Fehlschlag → exit 0
 else
   echo "✅ Balance nach Einzahlung = 200"
   echo "🎉 Integrationstest erfolgreich!"
-  exit 1   # bei Erfolg → exit 1
+  exit 0   # bei Erfolg → exit 1
 fi
