@@ -8,6 +8,11 @@ jobs:
   hello:
     runs-on: self-hosted
     steps:    
+      - name: Pre-clean workspace (remove root-owned leftovers)
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE":/w alpine:3.19 \
+            sh -lc 'rm -rf /w/* || true'
+            
       - name: Checkout repository
         uses: actions/checkout@v4
 
