@@ -93,3 +93,65 @@ The frontend communicates with a backend REST API exposed under `/api/v1`.
 
 Prints "Hello World from GitHub Actions Runner!" on each pull or push to main.
 For more information, see [hello-world:latest](https://hub.docker.com/_/hello-world).
+
+#### Goal
+The goal of Lecture 2 was to set up a GitHub Actions self-hosted runner on the provided build agent and configure a first simple pipeline.
+
+#### Runner Setup
+
+SSH access to the build agent with the user svcgithub
+```bash
+   ssh svcgithub@<IP-ADDRESS>
+```
+- Runner installed via repository settings (Settings → Actions → Runners → New self-hosted runner)
+
+- Configured with ./config.sh --url ... --token ...
+
+- Started with ./run.sh
+
+- Verified runner status in GitHub under Settings → Actions → Runners (online)
+
+#### Pipeline Configuration
+A workflow file .github/workflows/hello.yml was created:
+```bash
+name: Hello World
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  hello:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print Hello
+        run: echo "Hello World from GitHub Actions Runner!"
+
+      - name: Run Docker Hello World
+        run: docker run hello-world
+```
+
+#### Result
+
+Each push or pull request to main triggers the workflow.
+
+The pipeline successfully:
+
+- Checked out the repository.
+
+- Printed a "Hello World" message.
+
+- Ran the official hello-world Docker container, proving Docker integration.
+
+
+
+
+
+
+
