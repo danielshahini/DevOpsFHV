@@ -50,11 +50,29 @@ jobs:
           docker exec simplebankingsystem chmod +x /integration_test.sh
           docker exec simplebankingsystem /integration_test.sh          
 
+
+      # 1) Image bauen (dein bestehender Schritt)
+      - name: Build Docker image
+        run: |
+          docker build . \
+            --file Dockerfile \
+            --tag simplebankingsystem:latest \
+            --tag simplebankingsystem:$(date +%s)
+      
+      # 2) Coverage aus dem Build-Image in den Workspace kopieren
+      - name: Extract coverage from image
+        run: |
+          CID=$(docker create simplebankingsystem:latest)
+          mkdir -p target/site/jacoco
+          docker cp "$CID":/app/target/site/jacoco/jacoco.xml target/site/jacoco/jacoco.xml || true
+          docker rm "$CID"
+          test -f target/site/jacoco/jacoco.xml && echo "Coverage found" || (echo "No coverage report generated"; exit 1)
+
       - name: Run SonarQube analysis
         run: |
           docker run --rm \
             -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://localhost:9000" \
+            -e SONAR_HOST_URL="http://10.0.40.191:9000" \
             -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
                                    -Dsonar.sources=src/main/java \
                                    -Dsonar.java.binaries=target/classes \
