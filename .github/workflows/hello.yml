@@ -84,53 +84,53 @@ jobs:
 
         
      # --- DOKU: Site bauen (MkDocs) ---
-- name: Build docs site (MkDocs)
-  run: |
-    docker run --rm \
-      -v "$(pwd)":/docs \
-      -w /docs \
-      squidfunk/mkdocs-material:latest \
-      build -d site          # <-- nicht "docs/site", sondern "site"
-
-# --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
-- name: Build docs PDF (Pandoc)
-  run: |
-    docker run --rm \
-      -v "$(pwd)":/data \
-      -w /data \
-      pandoc/latex:3.1 \
-      --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
-      --resource-path=.:docs \
-      -o Dokumentation.pdf docs/doc.md
-
-# --- DOKU: Smoke-Test (sind die Artefakte da?) ---
-- name: Check docs artifacts
-  run: |
-    test -f site/index.html
-    test -f Dokumentation.pdf
-    echo "Docs site and PDF present."
-
-# --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
-- name: Build documentation runtime image
-  run: |
-    DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-    DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-
-    cat > Dockerfile.docs-runtime <<'EOF'
-    FROM nginx:alpine
-    COPY site/ /usr/share/nginx/html/
-    COPY Dokumentation.pdf /usr/share/nginx/html/
-    EOF
-
-    docker build \
-      -f Dockerfile.docs-runtime \
-      -t ${DOC_IMG}:latest \
-      -t ${DOC_IMG}:${DOC_TAG} \
-      .
-
-- name: Push documentation runtime image
-  run: |
-    DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-    DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-    docker push ${DOC_IMG}:latest
-    docker push ${DOC_IMG}:${DOC_TAG}
+      - name: Build docs site (MkDocs)
+        run: |
+          docker run --rm \
+            -v "$(pwd)":/docs \
+            -w /docs \
+            squidfunk/mkdocs-material:latest \
+            build -d site          # <-- nicht "docs/site", sondern "site"
+      
+      # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
+      - name: Build docs PDF (Pandoc)
+        run: |
+          docker run --rm \
+            -v "$(pwd)":/data \
+            -w /data \
+            pandoc/latex:3.1 \
+            --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
+            --resource-path=.:docs \
+            -o Dokumentation.pdf docs/doc.md
+      
+      # --- DOKU: Smoke-Test (sind die Artefakte da?) ---
+      - name: Check docs artifacts
+        run: |
+          test -f site/index.html
+          test -f Dokumentation.pdf
+          echo "Docs site and PDF present."
+      
+      # --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
+      - name: Build documentation runtime image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+        
+          cat > Dockerfile.docs-runtime <<'EOF'
+          FROM nginx:alpine
+          COPY site/ /usr/share/nginx/html/
+          COPY Dokumentation.pdf /usr/share/nginx/html/
+          EOF
+        
+          docker build \
+            -f Dockerfile.docs-runtime \
+            -t ${DOC_IMG}:latest \
+            -t ${DOC_IMG}:${DOC_TAG} \
+            .
+      
+      - name: Push documentation runtime image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+          docker push ${DOC_IMG}:latest
+          docker push ${DOC_IMG}:${DOC_TAG}
