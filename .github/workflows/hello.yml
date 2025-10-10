@@ -83,5 +83,17 @@ jobs:
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
       
-      
+      # Dokumentations‑Image bauen
+      - name: Build documentation image
+        run: |
+          # Das Image aus dem docs/‑Verzeichnis bauen
+          # Tag „latest“ für lokale Verwendung und ein Tag für eure interne Registry
+          docker build docs/ \
+            --file docs/Dockerfile \
+            --tag simplebankingsystem-docs:latest \
+            --tag 10.0.40.193:5000/team191/simplebankingsystem-docs:latest
+
+      # Dokumentations‑Image pushen
+      - name: Push documentation image
+        run: docker push 10.0.40.193:5000/team191/simplebankingsystem-docs:latest
       
