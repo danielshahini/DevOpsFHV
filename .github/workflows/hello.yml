@@ -58,12 +58,16 @@ jobs:
       - name: Push Docker image
         run: docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
 
+      - name: Build build‑stage image
+        run: docker build . --target build -t simplebankingsystem-build
+      
       - name: Extract compiled classes
         run: |
-          container_id=$(docker create simplebankingsystem:latest)
+          container_id=$(docker create simplebankingsystem-build)
           mkdir -p target
           docker cp "$container_id":/app/target/classes ./target/classes
           docker rm "$container_id"
+
 
       - name: Run SonarQube analysis inside sonar image
         run: |
@@ -76,8 +80,35 @@ jobs:
               -Dsonar.sources=. \
               -Dsonar.java.binaries=target/classes \
               -Dsonar.host.url=http://10.0.40.193:9000/ \
-              -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97"
+              -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
       
+      # --- Dokumentation bauen, testen, pushen ---
+
+      - name: Build documentation image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
       
+          docker build \
+            --file docs/Dockerfile \
+            --tag simplebankingsystem-docs:latest \
+            --tag ${DOC_IMG}:latest \
+            --tag ${DOC_IMG}:${DOC_TAG} \
+            .
+      
+      - name: Smoke test documentation image (PDF & Site vorhanden?)
+        run: |
+          docker run --rm simplebankingsystem-docs:latest /bin/sh -lc '
+            set -e
+            ls -l /docs/Dokumentation.pdf
+            test -f /docs/site/index.html && echo "Site OK"
+          '
+      
+      - name: Push documentation image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+          docker push ${DOC_IMG}:latest
+          docker push ${DOC_IMG}:${DOC_TAG}
       
