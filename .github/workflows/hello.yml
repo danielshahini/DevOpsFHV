@@ -64,9 +64,9 @@ jobs:
         run: |
           CID=$(docker create simplebankingsystem:latest)
           mkdir -p target/site/jacoco
+          ls -al "$CID":/app/target/site/jacoco/jacoco.xml target/site/jacoco/
           docker cp "$CID":/app/target/site/jacoco/jacoco.xml target/site/jacoco/jacoco.xml || true
           docker rm "$CID"
-          ls -al target/site/jacoco
           test -f target/site/jacoco/jacoco.xml && echo "Coverage found" || (echo "No coverage report generated"; exit 1)
 
       - name: Run SonarQube analysis
