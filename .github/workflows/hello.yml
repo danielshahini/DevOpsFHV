@@ -58,12 +58,16 @@ jobs:
       - name: Push Docker image
         run: docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
 
+      - name: Build build‑stage image
+        run: docker build . --target build -t simplebankingsystem-build
+      
       - name: Extract compiled classes
         run: |
-          container_id=$(docker create simplebankingsystem:latest)
+          container_id=$(docker create simplebankingsystem-build)
           mkdir -p target
           docker cp "$container_id":/app/target/classes ./target/classes
           docker rm "$container_id"
+
 
       - name: Run SonarQube analysis inside sonar image
         run: |
