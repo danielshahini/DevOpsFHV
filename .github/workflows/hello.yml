@@ -48,10 +48,11 @@ jobs:
         run: |
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
           docker exec simplebankingsystem chmod +x /integration_test.sh
-          docker exec simplebankingsystem /integration_test.sh
+          docker exec simplebankingsystem /integration_test.sh          
 
       - name: Run SonarQube analysis
         run: |
+          CONTAINER_ID=$(docker create simplebankingsystem:latest)
           docker run --rm \
             -v "$(pwd)":/usr/src \
             -e SONAR_HOST_URL="http://host.docker.internal:9000" \
@@ -60,6 +61,9 @@ jobs:
                                    -Dsonar.java.binaries=target/classes \
                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" \
             sonarsource/sonar-scanner-cli
+          docker cp $CONTAINER_ID:/app/target/site/jacoco/jacoco.xml ./target/site/jacoco/jacoco.xml
+          docker rm $CONTAINER_ID
+
 
       
       - name: Tag Docker image
