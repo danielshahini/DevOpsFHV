@@ -83,65 +83,54 @@ jobs:
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
         
-      # --- DOKU: Site bauen (MkDocs) ---
-      - name: Build docs site (MkDocs)
-        run: |
-          # MkDocs-Builder: Arbeitsdir /docs. Wir wollen Output ins Unterverzeichnis docs/site
-          docker run --rm \
-            -v "$(pwd)":/docs \
-            -w /docs \
-            squidfunk/mkdocs-material:latest \
-            build -d site
-      
-      # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
-      - name: Build docs PDF (Pandoc)
-        run: |
-          # Pandoc-Container nutzt /data als Arbeitsverzeichnis. Erzeuge PDF aus deiner Hauptdatei.
-          docker run --rm \
-            -v "$(pwd)":/data \
-            -w /data \
-            pandoc/latex:3.1 \
-            --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
-            -o docs/Dokumentation.pdf docs/doc.md
-      
-      # --- DOKU: Smoke-Test (stellen wir sicher, dass Artefakte da sind) ---
-      - name: Check docs artifacts
-        run: |
-          test -f docs/site/index.html
-          test -f docs/Dokumentation.pdf
-          echo "Docs site and PDF present."
-      
-      # --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
-      - name: Build documentation runtime image
-        run: |
-          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-      
-          cat > Dockerfile.docs-runtime <<'EOF'
-          FROM nginx:alpine
-          # Statisches Site-Bundle
-          COPY docs/site/ /usr/share/nginx/html/
-          # PDF zusätzlich im Root verfügbar machen
-          COPY docs/Dokumentation.pdf /usr/share/nginx/html/
-          # Optional: einfache Cache-Header oder Index lassen wir NGINX default.
-          EOF
-      
-          docker build \
-            -f Dockerfile.docs-runtime \
-            -t ${DOC_IMG}:latest \
-            -t ${DOC_IMG}:${DOC_TAG} \
-            .
-      
-      - name: Push documentation runtime image
-        run: |
-          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-          docker push ${DOC_IMG}:latest
-          docker push ${DOC_IMG}:${DOC_TAG}
-      
-      # --- DOKU: PDF als Pipeline-Artefakt bereitstellen (optional, sehr praktisch) ---
-      - name: Upload Dokumentation.pdf
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dokumentation.pdf
-          path: docs/Dokumentation.pdf
+     # --- DOKU: Site bauen (MkDocs) ---
+- name: Build docs site (MkDocs)
+  run: |
+    docker run --rm \
+      -v "$(pwd)":/docs \
+      -w /docs \
+      squidfunk/mkdocs-material:latest \
+      build -d site          # <-- nicht "docs/site", sondern "site"
+
+# --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
+- name: Build docs PDF (Pandoc)
+  run: |
+    docker run --rm \
+      -v "$(pwd)":/data \
+      -w /data \
+      pandoc/latex:3.1 \
+      --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
+      --resource-path=.:docs \
+      -o Dokumentation.pdf docs/doc.md
+
+# --- DOKU: Smoke-Test (sind die Artefakte da?) ---
+- name: Check docs artifacts
+  run: |
+    test -f site/index.html
+    test -f Dokumentation.pdf
+    echo "Docs site and PDF present."
+
+# --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
+- name: Build documentation runtime image
+  run: |
+    DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+    DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+
+    cat > Dockerfile.docs-runtime <<'EOF'
+    FROM nginx:alpine
+    COPY site/ /usr/share/nginx/html/
+    COPY Dokumentation.pdf /usr/share/nginx/html/
+    EOF
+
+    docker build \
+      -f Dockerfile.docs-runtime \
+      -t ${DOC_IMG}:latest \
+      -t ${DOC_IMG}:${DOC_TAG} \
+      .
+
+- name: Push documentation runtime image
+  run: |
+    DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+    DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+    docker push ${DOC_IMG}:latest
+    docker push ${DOC_IMG}:${DOC_TAG}
