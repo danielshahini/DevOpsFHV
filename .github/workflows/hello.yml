@@ -83,41 +83,65 @@ jobs:
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
         
-      - name: Build documentation image
+      # --- DOKU: Site bauen (MkDocs) ---
+      - name: Build docs site (MkDocs)
+        run: |
+          # MkDocs-Builder: Arbeitsdir /docs. Wir wollen Output ins Unterverzeichnis docs/site
+          docker run --rm \
+            -v "$(pwd)":/docs \
+            -w /docs \
+            squidfunk/mkdocs-material:latest \
+            build -d docs/site
+      
+      # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
+      - name: Build docs PDF (Pandoc)
+        run: |
+          # Pandoc-Container nutzt /data als Arbeitsverzeichnis. Erzeuge PDF aus deiner Hauptdatei.
+          docker run --rm \
+            -v "$(pwd)":/data \
+            -w /data \
+            pandoc/latex:3.1 \
+            --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
+            -o docs/Dokumentation.pdf docs/doc.md
+      
+      # --- DOKU: Smoke-Test (stellen wir sicher, dass Artefakte da sind) ---
+      - name: Check docs artifacts
+        run: |
+          test -f docs/site/index.html
+          test -f docs/Dokumentation.pdf
+          echo "Docs site and PDF present."
+      
+      # --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
+      - name: Build documentation runtime image
         run: |
           DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
           DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-        
+      
+          cat > Dockerfile.docs-runtime <<'EOF'
+          FROM nginx:alpine
+          # Statisches Site-Bundle
+          COPY docs/site/ /usr/share/nginx/html/
+          # PDF zusätzlich im Root verfügbar machen
+          COPY docs/Dokumentation.pdf /usr/share/nginx/html/
+          # Optional: einfache Cache-Header oder Index lassen wir NGINX default.
+          EOF
+      
           docker build \
-            --file docs/Dockerfile \
-            --tag simplebankingsystem-docs:latest \
-            --tag ${DOC_IMG}:latest \
-            --tag ${DOC_IMG}:${DOC_TAG} \
+            -f Dockerfile.docs-runtime \
+            -t ${DOC_IMG}:latest \
+            -t ${DOC_IMG}:${DOC_TAG} \
             .
-        
-      - name: Smoke test documentation image
-        run: |
-          docker run --rm simplebankingsystem-docs:latest /bin/sh -lc '
-            set -e
-            ls -l /docs/Dokumentation.pdf
-            test -f /docs/site/index.html && echo "Site OK"
-          '
-        
-      - name: Push documentation image
+      
+      - name: Push documentation runtime image
         run: |
           DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
           DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
           docker push ${DOC_IMG}:latest
           docker push ${DOC_IMG}:${DOC_TAG}
       
-      - name: Export Dokumentation.pdf as artifact
-        run: |
-          id=$(docker create simplebankingsystem-docs:latest)
-          docker cp "$id":/docs/Dokumentation.pdf ./Dokumentation.pdf
-          docker rm "$id"
-      
+      # --- DOKU: PDF als Pipeline-Artefakt bereitstellen (optional, sehr praktisch) ---
       - name: Upload Dokumentation.pdf
         uses: actions/upload-artifact@v4
         with:
           name: Dokumentation.pdf
-          path: Dokumentation.pdf
+          path: docs/Dokumentation.pdf
