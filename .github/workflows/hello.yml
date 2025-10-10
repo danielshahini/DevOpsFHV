@@ -58,6 +58,9 @@ jobs:
       - name: Push Docker image
         run: docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
 
+      - name: Build Sonar analysis image
+        run: docker build . -t simplebankingsystem:sonar --target sonar
+
       - name: Run SonarQube analysis inside sonar image
         run: |
           docker run --rm \
