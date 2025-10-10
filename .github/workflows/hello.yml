@@ -50,6 +50,18 @@ jobs:
           docker exec simplebankingsystem chmod +x /integration_test.sh
           docker exec simplebankingsystem /integration_test.sh
 
+      - name: Run SonarQube analysis
+        run: |
+          docker run --rm \
+            -v "$(pwd)":/usr/src \
+            -e SONAR_HOST_URL="http://host.docker.internal:9000" \
+            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
+                                   -Dsonar.sources=src/main/java \
+                                   -Dsonar.java.binaries=target/classes \
+                                   -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" \
+            sonarsource/sonar-scanner-cli
+
+      
       - name: Tag Docker image
         run: docker tag simplebankingsystem:latest 10.0.40.193:5000/team191/simplebankingsystem:latest
 
