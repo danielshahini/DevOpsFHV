@@ -4,9 +4,7 @@ WORKDIR /app
 COPY SimpleBankingSystem .
 RUN mvn clean verify
 
-RUN ls -l target/site/jacoco || echo "No coverage report generated"
-
-RUN mkdir -p /coverage && cp target/site/jacoco/jacoco.xml ~/coverage/jacoco.xml
+RUN mkdir -p ~/coverage && cp target/site/jacoco/jacoco.xml ~/coverage/jacoco.xml
 RUN mvn clean package -X
 
 # --- Stage 2: Run Jar ---
