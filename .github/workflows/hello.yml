@@ -82,9 +82,7 @@ jobs:
               -Dsonar.host.url=http://10.0.40.193:9000/ \
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
-      
-      # --- Dokumentation bauen, testen, pushen ---
-  
+        
       - name: Build documentation image
         run: |
           DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
@@ -97,30 +95,29 @@ jobs:
             --tag ${DOC_IMG}:${DOC_TAG} \
             .
         
-        - name: Smoke test documentation image
-          run: |
-            docker run --rm simplebankingsystem-docs:latest /bin/sh -lc '
-              set -e
-              ls -l /docs/Dokumentation.pdf
-              test -f /docs/site/index.html && echo "Site OK"
-            '
+      - name: Smoke test documentation image
+        run: |
+          docker run --rm simplebankingsystem-docs:latest /bin/sh -lc '
+            set -e
+            ls -l /docs/Dokumentation.pdf
+            test -f /docs/site/index.html && echo "Site OK"
+          '
         
-        - name: Push documentation image
-          run: |
-            DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-            DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-            docker push ${DOC_IMG}:latest
-            docker push ${DOC_IMG}:${DOC_TAG}
-        
-        # (Optional) PDF als Pipeline-Artefakt aus dem Image exportieren:
-        - name: Export Dokumentation.pdf as artifact
-          run: |
-            id=$(docker create simplebankingsystem-docs:latest)
-            docker cp "$id":/docs/Dokumentation.pdf ./Dokumentation.pdf
-            docker rm "$id"
-        
-        - name: Upload Dokumentation.pdf
-          uses: actions/upload-artifact@v4
-          with:
-            name: Dokumentation.pdf
-            path: Dokumentation.pdf
+      - name: Push documentation image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+          docker push ${DOC_IMG}:latest
+          docker push ${DOC_IMG}:${DOC_TAG}
+      
+      - name: Export Dokumentation.pdf as artifact
+        run: |
+          id=$(docker create simplebankingsystem-docs:latest)
+          docker cp "$id":/docs/Dokumentation.pdf ./Dokumentation.pdf
+          docker rm "$id"
+      
+      - name: Upload Dokumentation.pdf
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dokumentation.pdf
+          path: Dokumentation.pdf
