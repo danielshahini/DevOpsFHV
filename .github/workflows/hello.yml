@@ -52,17 +52,15 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          CONTAINER_ID=$(docker create simplebankingsystem:latest)
           docker run --rm \
             -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://host.docker.internal:9000" \
+            -e SONAR_HOST_URL="http://172.17.0.1:9000" \
             -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
                                    -Dsonar.sources=src/main/java \
                                    -Dsonar.java.binaries=target/classes \
                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" \
             sonarsource/sonar-scanner-cli
-          docker cp $CONTAINER_ID:/app/target/site/jacoco/jacoco.xml ./target/site/jacoco/jacoco.xml
-          docker rm $CONTAINER_ID
+          
 
 
       
