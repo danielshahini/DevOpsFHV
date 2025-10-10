@@ -53,14 +53,11 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          docker run --rm \
-            -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://10.0.40.193:9000" \
-            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
-                                   -Dsonar.sources=src/main/java \
-                                   -Dsonar.java.binaries=target/classes \
-                                   -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" \
-            sonarsource/sonar-scanner-cli
+          sonar-scanner \
+          -Dsonar.projectKey=simplebankingsystem \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=http://10.0.40.193:9000 \
+          -Dsonar.token=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
           
 
 
