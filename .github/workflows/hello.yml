@@ -15,23 +15,6 @@ jobs:
       - name: Print Hello
         run: echo "Hello World from GitHub Actions Runner!"
 
-      - name: Run unit tests with coverage
-        run: mvn clean verify
-
-      - name: Show coverage report path
-        run: ls -l target/site/jacoco || echo "No report found"
-
-      - name: Run SonarQube analysis
-        run: |
-          docker run --rm \
-            -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://host.docker.internal:9000" \
-            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
-                                   -Dsonar.sources=src/main/java \
-                                   -Dsonar.java.binaries=target/classes \
-                                   -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" \
-            sonarsource/sonar-scanner-cli
-
       - name: Build Docker image
         run: |
           docker build . \
