@@ -55,7 +55,7 @@ jobs:
         run: |
           docker run --rm \
             -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://10.0.40.191:9000" \
+            -e SONAR_HOST_URL="http://10.0.40.193:9000" \
             -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=simplebankingsystem \
                                    -Dsonar.sources=src/main/java \
                                    -Dsonar.java.binaries=target/classes \
