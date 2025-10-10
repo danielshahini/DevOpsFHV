@@ -52,15 +52,8 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          docker run --rm \
-            -v "$(pwd)":/usr/src \
-            -e SONAR_HOST_URL="http://10.0.40.193:9000" \
-            -e SONAR_LOGIN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97} \
-             -Dsonar.sources=src/main/java \
-             -Dsonar.java.binaries=target/classes \
-             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            sonarsource/sonar-scanner-cli                       
-          
+          docker run --rm \-e SONAR_HOST_URL=http://10.0.40.193:9000/ \-e SONAR_LOGIN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \-v $(pwd):/usr/src \
+            sonarsource/sonar-scanner-cli:latest
           
 
 
