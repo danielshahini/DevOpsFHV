@@ -91,7 +91,7 @@ jobs:
             -v "$(pwd)":/docs \
             -w /docs \
             squidfunk/mkdocs-material:latest \
-            build -d docs/site
+            build -d site
       
       # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
       - name: Build docs PDF (Pandoc)
