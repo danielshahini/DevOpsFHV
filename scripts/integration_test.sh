@@ -5,7 +5,7 @@ BASE_URL="http://localhost:8080/api/v1/accounts"
 USER="testuser"
 
 echo "Warte auf Service..."
-for i in {1..10}; do
+for i in {1..20}; do
   if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
     echo "Service ist erreichbar!"
     break
