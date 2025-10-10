@@ -58,8 +58,8 @@ jobs:
           -v $(pwd):/usr/src \
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.projectKey=simplebankingsystem \
-            -Dsonar.java.binaries=build/classes/java/main
-          
+            -Dsonar.sources=. \
+            -Dsonar.java.binaries=target/classes          
 
 
       
