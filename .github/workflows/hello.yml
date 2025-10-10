@@ -83,19 +83,21 @@ jobs:
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
         
-     # --- DOKU: Site bauen (MkDocs) ---
+    # --- DOKU: Site bauen (MkDocs) ---
       - name: Build docs site (MkDocs)
         run: |
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
             -v "$(pwd)":/docs \
             -w /docs \
             squidfunk/mkdocs-material:latest \
-            build -d site          # <-- nicht "docs/site", sondern "site"
+            build -d site
       
       # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
       - name: Build docs PDF (Pandoc)
         run: |
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
             -v "$(pwd)":/data \
             -w /data \
             pandoc/latex:3.1 \
