@@ -49,21 +49,7 @@ jobs:
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
           docker exec simplebankingsystem chmod +x /integration_test.sh
           docker exec simplebankingsystem /integration_test.sh          
-
-      - name: Run SonarQube analysis inside build container
-        run: |
-          docker run --rm \
-            -e SONAR_HOST_URL=http://10.0.40.193:9000/ \
-            -e SONAR_TOKEN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \
-            -v $(pwd):/app \
-            -w /app \
-            maven:3.9.6-eclipse-temurin-21 \
-            mvn verify sonar:sonar \
-              -Dsonar.projectKey=simplebankingsystem \
-              -Dsonar.host.url=http://10.0.40.193:9000/ \
-              -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
             
-
 
       
       - name: Tag Docker image
@@ -71,4 +57,20 @@ jobs:
 
       - name: Push Docker image
         run: docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
+
+      - name: Run SonarQube analysis inside built container
+        run: |
+          docker run --rm \
+            -e SONAR_HOST_URL=http://10.0.40.193:9000/ \
+            -e SONAR_TOKEN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \
+            -v $(pwd):/app \
+            -w /app \
+            10.0.40.193:5000/team191/simplebankingsystem:latest \
+            bash -c "mvn verify sonar:sonar \
+              -Dsonar.projectKey=simplebankingsystem \
+              -Dsonar.sources=. \
+              -Dsonar.java.binaries=target/classes \
+              -Dsonar.host.url=http://10.0.40.193:9000/ \
+              -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97"
+
 
