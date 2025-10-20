@@ -1,0 +1,62 @@
+# --- DOKU: Site bauen (MkDocs) ---
+      - name: Build docs site (MkDocs)
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$(pwd)":/work \
+            -w /work \
+            squidfunk/mkdocs-material:latest \
+            sh -lc 'set -e
+                    echo "== MkDocs version ==" && mkdocs --version
+                    echo "== Ensure mkdocs.yml exists ==" && test -f mkdocs.yml && echo OK
+                    echo "== Build site to /work/site ==" && mkdocs build -d /work/site
+                    echo "== Built files ==" && ls -lah /work/site'
+      
+      # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
+      - name: Build docs PDF (Pandoc)
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$(pwd)":/work \
+            -w /work \
+            pandoc/latex:3.1 \
+            --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
+            --resource-path=.:docs \
+            -o /work/Dokumentation.pdf docs/doc.md
+      
+      # --- DOKU: Smoke-Test (sind die Artefakte da?) ---
+      - name: Check docs artifacts
+        run: |
+          echo "== Inspect site dir ==" && ls -lah site || true
+          # Falls keine index.html, akzeptiere ersatzweise 404.html – MkDocs erzeugt zumindest die.
+          if [ ! -f site/index.html ] && [ -f site/404.html ]; then
+            echo "index.html fehlt, aber 404.html vorhanden – MkDocs hat gebaut. (Prüfe nav/index.md)"
+          fi
+          test -d site
+          test -f Dokumentation.pdf
+          echo "Docs site and PDF present."
+      
+      # --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
+      - name: Build documentation runtime image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+        
+          cat > Dockerfile.docs-runtime <<'EOF'
+          FROM nginx:alpine
+          COPY site/ /usr/share/nginx/html/
+          COPY Dokumentation.pdf /usr/share/nginx/html/
+          EOF
+        
+          docker build \
+            -f Dockerfile.docs-runtime \
+            -t ${DOC_IMG}:latest \
+            -t ${DOC_IMG}:${DOC_TAG} \
+            .
+      
+      - name: Push documentation runtime image
+        run: |
+          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
+          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
+          docker push ${DOC_IMG}:latest
+          docker push ${DOC_IMG}:${DOC_TAG}
