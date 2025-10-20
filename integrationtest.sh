@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Give the documentation container some time to spin up.
-sleep 2
+sleep 20
 
 # Read the content into the variable "PC".
 PC=$(curl -s http://127.0.0.1:8081)
