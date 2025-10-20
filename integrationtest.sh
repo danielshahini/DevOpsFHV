@@ -3,7 +3,7 @@
 echo "Waiting for documentation container to be ready..."
 
 for i in {1..10}; do
-  PC=$(curl -s http://127.0.0.1:8081)
+  PC=$(curl -s http://localhost:8081)
   if [[ "$PC" == *"Material for MkDocs"* ]]; then
     echo "✅ Documentation is online and contains expected text."
     exit 0
