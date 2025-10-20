@@ -1,2 +1,7 @@
 FROM nginx
-COPY build/site /usr/share/nginx/html
+COPY build/site/doc /usr/share/nginx/html
+COPY build/site/assets /usr/share/nginx/html/assets
+COPY build/site/search /usr/share/nginx/html/search
+COPY build/site/404.html /usr/share/nginx/html/404.html
+COPY build/site/sitemap.xml /usr/share/nginx/html/sitemap.xml
+COPY build/site/sitemap.xml.gz /usr/share/nginx/html/sitemap.xml.gz
