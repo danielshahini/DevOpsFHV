@@ -113,6 +113,13 @@ jobs:
 
           echo "📂 Inhalt von build/site nach MkDocs-Build:"
           ls -R build/site
+      - name: Validate build output
+        run: |
+          if [ ! -f build/site/index.html ]; then
+            echo "❌ Documentation not built! build/site/index.html is missing."
+            exit 1
+          fi
+          echo "✅ Documentation successfully built!"
       - name: Create the container
         run: |
           # Just to be safe: Remove eventually existing images.
