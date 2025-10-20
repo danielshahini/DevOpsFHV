@@ -12,6 +12,14 @@ jobs:
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE":/w alpine:3.19 \
             sh -lc 'rm -rf /w/* || true'
+
+      - name: Clean the container in any case
+        if: always()
+        run: |
+          docker container stop docintegrationtest || true
+          docker container rm docintegrationtest || true
+          docker container stop mydoc || true
+          docker container rm mydoc || true
             
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -120,11 +128,5 @@ jobs:
         run: |
           # Run the integration test from the file "integrationtest.sh" against the running documentation image.
           docker run --name docintegrationtest --network host --rm -v "${PWD}/integrationtest.sh:/integrationtest.sh:ro" ellerbrock/alpine-bash-curl-ssl bash /integrationtest.sh
-      - name: Clean the container in any case
-        if: always()
-        run: |
-          docker container stop docintegrationtest || true
-          docker container rm docintegrationtest || true
-          docker container stop mydoc || true
-          docker container rm mydoc || true
+      
       
