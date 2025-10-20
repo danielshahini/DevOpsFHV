@@ -115,7 +115,7 @@ jobs:
           ls -R build/site
       - name: Validate build output
         run: |
-          if [ ! -f build/site/index.html ]; then
+          if [ ! -f build/site/doc/index.html ]; then
             echo "❌ Documentation not built! build/site/index.html is missing."
             exit 1
           fi
