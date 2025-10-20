@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 
-# Give the documentation container some time to spin up.
-sleep 2
+echo "Waiting for documentation container to be ready..."
 
-# Read the content into the variable "PC".
-PC=$(curl -s http://127.0.0.1:8081)
+for i in {1..10}; do
+  PC=$(curl -s http://127.0.0.1:8081)
+  if [[ "$PC" == *"Material for MkDocs"* ]]; then
+    echo "✅ Documentation is online and contains expected text."
+    exit 0
+  fi
+  echo "Attempt $i/10 failed. Retrying in 3s..."
+  sleep 3
+done
 
-# Check if the string "Material for MkDocs" is somewhere in the html content.
-if [[ "${PC}" = *"Material for MkDocs"* ]]
-then
-  # If found, return success.
-  exit 0
-else
-  # If not, return failure.
-  exit 1
-fi
+echo "❌ Documentation did not respond correctly after 10 attempts."
+exit 1
