@@ -87,66 +87,44 @@ jobs:
               -Dsonar.host.url=http://10.0.40.193:9000/ \
               -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
-        
-      # --- DOKU: Site bauen (MkDocs) ---
-      - name: Build docs site (MkDocs)
+      - name: Set file and folder permissions to local user
         run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -v "$(pwd)":/work \
-            -w /work \
-            squidfunk/mkdocs-material:latest \
-            sh -lc 'set -e
-                    echo "== MkDocs version ==" && mkdocs --version
-                    echo "== Ensure mkdocs.yml exists ==" && test -f mkdocs.yml && echo OK
-                    echo "== Build site to /work/site ==" && mkdocs build -d /work/site
-                    echo "== Built files ==" && ls -lah /work/site'
+          echo "Setting file and folder permissions in case something with user and group root was created in a previous run."
+          echo "Using user and group $(id -u):$(id -g) for the whole folder."
+          docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
+      - uses: actions/checkout@v4
+      - name: Build the documentation
+        run: |
+          # Build the static html page into the folder "build/site"
+          # The parameter "-u" is required because otherwise the generated site would have root:root as user:group.
+          docker run --rm -u "$(id -u):$(id -g)" -v "${PWD}:/docs" squidfunk/mkdocs-material build -d build/site
+          # List the contents of the project folder
+          ls -al
+      - name: Create the container
+        run: |
+          # Just to be safe: Remove eventually existing images.
+          docker image rm my-documentation || true
+
+          # Build the documentation image
+          docker build -f Dockerfile.nginx -t my-documentation .
+          docker image ls --all
+      - name: Run the documentation container
+        run: |
+          # Just to be safe: Stop and remove eventually existing containers.
+          docker container stop mydoc || true
+          docker container rm mydoc || true
+
+          # Run the documentation image on the build agent.
+          docker run --name mydoc -d --restart always -p 8081:80 my-documentation
+      - name: Test the container
+        run: |
+          # Run the integration test from the file "integrationtest.sh" against the running documentation image.
+          docker run --name docintegrationtest --network host --rm -v "${PWD}/integrationtest.sh:/integrationtest.sh:ro" ellerbrock/alpine-bash-curl-ssl bash /integrationtest.sh
+      - name: Clean the container in any case
+        if: always()
+        run: |
+          docker container stop docintegrationtest || true
+          docker container rm docintegrationtest || true
+          docker container stop mydoc || true
+          docker container rm mydoc || true
       
-      # --- DOKU: PDF bauen (Pandoc + XeLaTeX) ---
-      - name: Build docs PDF (Pandoc)
-        run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -v "$(pwd)":/work \
-            -w /work \
-            pandoc/latex:3.1 \
-            --toc --pdf-engine=xelatex -f markdown+grid_tables+table_captions \
-            --resource-path=.:docs \
-            -o /work/Dokumentation.pdf docs/doc.md
-      
-      # --- DOKU: Smoke-Test (sind die Artefakte da?) ---
-      - name: Check docs artifacts
-        run: |
-          echo "== Inspect site dir ==" && ls -lah site || true
-          # Falls keine index.html, akzeptiere ersatzweise 404.html – MkDocs erzeugt zumindest die.
-          if [ ! -f site/index.html ] && [ -f site/404.html ]; then
-            echo "index.html fehlt, aber 404.html vorhanden – MkDocs hat gebaut. (Prüfe nav/index.md)"
-          fi
-          test -d site
-          test -f Dokumentation.pdf
-          echo "Docs site and PDF present."
-      
-      # --- DOKU: Runtime-Image (NGINX) bauen und pushen ---
-      - name: Build documentation runtime image
-        run: |
-          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-        
-          cat > Dockerfile.docs-runtime <<'EOF'
-          FROM nginx:alpine
-          COPY site/ /usr/share/nginx/html/
-          COPY Dokumentation.pdf /usr/share/nginx/html/
-          EOF
-        
-          docker build \
-            -f Dockerfile.docs-runtime \
-            -t ${DOC_IMG}:latest \
-            -t ${DOC_IMG}:${DOC_TAG} \
-            .
-      
-      - name: Push documentation runtime image
-        run: |
-          DOC_IMG=10.0.40.193:5000/team191/simplebankingsystem-docs
-          DOC_TAG="${GITHUB_REF_NAME//\//-}-${GITHUB_RUN_NUMBER}"
-          docker push ${DOC_IMG}:latest
-          docker push ${DOC_IMG}:${DOC_TAG}
