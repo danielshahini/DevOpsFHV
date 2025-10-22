@@ -85,73 +85,177 @@ The frontend communicates with a backend REST API exposed under `/api/v1`.
 
 ---
 
-# Pipeline
+# CI/CD Pipeline
 
-## Github-Actions workflow
+## GitHub Actions Workflow (`.github/workflows/hello.yml`)
 
-### Docker-based "Hello World" workflow
+This workflow automates building, testing, quality analysis, and documentation deployment using a **self-hosted runner** and Docker-based steps.
 
-Prints "Hello World from GitHub Actions Runner!" on each pull or push to main.
-For more information, see [hello-world:latest](https://hub.docker.com/_/hello-world).
+---
 
-#### Goal
-The goal of Lecture 2 was to set up a GitHub Actions self-hosted runner on the provided build agent and configure a first simple pipeline.
+## Workflow Overview
 
-#### Runner Setup
+### Trigger
+- Runs automatically on **push** to the `main` branch.
 
-SSH access to the build agent with the user svcgithub
+### Environment
+- **Runner:** `self-hosted`
+- **Core Tools:** Docker, SonarQube, MkDocs Material
+
+---
+
+## Steps Breakdown
+
+### 🧹 Cleanup Phase
+Removes all running/stopped containers, networks, and dangling images to ensure a clean environment before each build.
+
 ```bash
-   ssh svcgithub@<IP-ADDRESS>
-```
-- Runner installed via repository settings (Settings → Actions → Runners → New self-hosted runner)
-
-- Configured with ./config.sh --url ... --token ...
-
-- Started with ./run.sh
-
-- Verified runner status in GitHub under Settings → Actions → Runners (online)
-
-#### Pipeline Configuration
-A workflow file .github/workflows/hello.yml was created:
-```bash
-name: Hello World
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  hello:
-    runs-on: self-hosted
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Print Hello
-        run: echo "Hello World from GitHub Actions Runner!"
-
-      - name: Run Docker Hello World
-        run: docker run hello-world
+docker stop $(docker ps -aq) || true
+docker rm $(docker ps -aq) || true
+docker network prune -f || true
+docker image prune -f || true
 ```
 
-#### Result
+---
 
-Each push or pull request to main triggers the workflow.
+### 🧾 Checkout Repository
+Uses the official `actions/checkout@v4` action to clone the project repository to the runner.
 
-The pipeline successfully:
+---
 
-- Checked out the repository.
+### 💬 Hello World Verification
+A basic sanity check that confirms runner execution:
 
-- Printed a "Hello World" message.
+```bash
+echo "Hello World from GitHub Actions Runner!"
+```
 
-- Ran the official hello-world Docker container, proving Docker integration.
+---
 
+### 🐳 Build Docker Image
+Builds the backend service image with both a `latest` tag and a timestamp-based tag:
 
+```bash
+docker build .   --file Dockerfile   --tag simplebankingsystem:latest   --tag simplebankingsystem:$(date +%s)
+```
 
+---
 
+### 🧱 Run Containers
+1. **Run Docker Hello World**  
+   Confirms Docker functionality:
+   ```bash
+   docker run hello-world
+   ```
 
+2. **Run SimpleBankingSystem**
+   ```bash
+   docker run -d      --name simplebankingsystem      --restart unless-stopped      --network host      -p 8080:8080      simplebankingsystem:latest
+   ```
 
+---
 
+### 🧪 Integration Tests
+Copies and executes a test script inside the container:
+
+```bash
+docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
+docker exec simplebankingsystem chmod +x /integration_test.sh
+docker exec simplebankingsystem /integration_test.sh
+```
+
+---
+
+### 🏷️ Tag & Push Image
+Tags the built image and pushes it to the private Docker registry:
+
+```bash
+docker tag simplebankingsystem:latest 10.0.40.193:5000/team191/simplebankingsystem:latest
+docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
+```
+
+---
+
+### ⚙️ Build Stage Extraction
+Builds a temporary **build-stage** image to extract compiled Java classes:
+
+```bash
+docker build . --target build -t simplebankingsystem-build
+container_id=$(docker create simplebankingsystem-build)
+mkdir -p target
+docker cp "$container_id":/app/target/classes ./target/classes
+docker rm "$container_id"
+```
+
+---
+
+### 🔍 SonarQube Static Analysis
+Runs a full SonarQube scan using Docker:
+
+```bash
+docker run --rm   -e SONAR_HOST_URL=http://10.0.40.193:9000/   -e SONAR_TOKEN=<SECRET_TOKEN>   -v $(pwd):/usr/src   sonarsource/sonar-scanner-cli:latest     -Dsonar.projectKey=simplebankingsystem     -Dsonar.sources=.     -Dsonar.java.binaries=target/classes
+```
+
+This ensures **code quality**, **coverage**, and **security compliance** before deployment.
+
+---
+
+### 🔐 Permission Fix
+Prevents permission conflicts when Docker creates root-owned files:
+
+```bash
+docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
+```
+
+---
+
+### 📚 Documentation Build (MkDocs)
+Builds project documentation inside a `squidfunk/mkdocs-material` container:
+
+```bash
+docker run --rm   -u "$(id -u):$(id -g)"   -v "${PWD}:/docs"   -w /docs   squidfunk/mkdocs-material   build -d /docs/build/site
+```
+
+---
+
+### ✅ Documentation Validation
+Ensures documentation is properly generated:
+
+```bash
+if [ ! -f build/site/doc/index.html ]; then
+  echo "❌ Documentation not built!"
+  exit 1
+fi
+echo "✅ Documentation successfully built!"
+```
+
+---
+
+### 🌐 Documentation Deployment
+Builds and deploys an Nginx container serving the generated docs:
+
+```bash
+docker build -f Dockerfile.nginx -t my-documentation .
+docker run --name mydoc -d --restart always -p 8081:80 my-documentation
+```
+
+---
+
+### 🔬 Documentation Integration Test
+Performs an automated integration test using curl inside an Alpine-based container:
+
+```bash
+docker run --name docintegrationtest --network host --rm   -v "${PWD}/integrationtest.sh:/integrationtest.sh:ro"   ellerbrock/alpine-bash-curl-ssl bash /integrationtest.sh
+```
+
+---
+
+## ✅ Final Results
+
+- Clean and reproducible builds
+- Automated backend and documentation deployment
+- Static code analysis via SonarQube
+- Integration tests to validate running containers
+- MkDocs-based documentation automatically served via Nginx
+
+---
