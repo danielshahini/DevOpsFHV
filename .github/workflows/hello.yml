@@ -108,36 +108,34 @@ jobs:
 
       - name: Build PDF with Pandoc (LaTeX)
         run: |
-          set -euo pipefail
+          set -e
           mkdir -p build/site
 
           SRC_DIR="docs"
           [ -d "docs" ] || SRC_DIR="doc"
-          [ -d "$SRC_DIR" ] || { echo "❌ Weder docs/ noch doc/ gefunden"; exit 1; }
+          [ -d "$SRC_DIR" ] || { echo "❌ Kein docs/ oder doc/ gefunden"; exit 1; }
 
-          echo "ℹ️  Verwende Quellverzeichnis: $SRC_DIR"
+          echo "ℹ️ Verwende Quellverzeichnis: $SRC_DIR"
 
-          # PDF mit Pandoc/LaTeX erzeugen
+          # Liste der Dateien für den Pandoc-Aufruf generieren
+          FILES=$(find "$SRC_DIR" -type f -name "*.md" | sort)
+          echo "📄 Dateien:"
+          echo "$FILES"
+
+          # PDF direkt mit Pandoc erzeugen (außerhalb von Bash in Docker)
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
             pandoc/latex:latest \
-            bash -c "
-              set -euo pipefail
-              FILES=\$(find $SRC_DIR -type f -name '*.md' | sort | tr '\n' ' ')
-              echo '📄 Dateien:'
-              echo \"\$FILES\"
-              pandoc \$FILES \
-                --from gfm+emoji \
-                --toc --toc-depth=3 \
-                --pdf-engine=xelatex \
-                -V mainfont='DejaVu Sans' \
-                -V papersize=A4 \
-                -V geometry:margin=20mm \
-                --resource-path=.:$SRC_DIR \
-                --metadata title='Project Documentation' \
-                -o build/site/documentation.pdf
-            "
+            pandoc $FILES \
+              --from gfm \
+              --toc --toc-depth=3 \
+              --pdf-engine=xelatex \
+              -V mainfont="DejaVu Sans" \
+              -V papersize=A4 \
+              -V geometry:margin=20mm \
+              --metadata title="Project Documentation" \
+              -o build/site/documentation.pdf
       - name: Validate PDF output
         run: |
           test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
