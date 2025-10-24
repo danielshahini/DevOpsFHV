@@ -111,33 +111,36 @@ jobs:
           set -e
           mkdir -p build/site
 
-          SRC_DIR="docs"
-          [ -d "docs" ] || SRC_DIR="doc"
+          # docs-Verzeichnis bestimmen
+          SRC_DIR="docs"; [ -d docs ] || SRC_DIR="doc"
           [ -d "$SRC_DIR" ] || { echo "❌ Kein docs/ oder doc/ gefunden"; exit 1; }
 
-          echo "ℹ️ Verwende Quellverzeichnis: $SRC_DIR"
-
-          FILES=$(find "$SRC_DIR" -type f -name "*.md" | sort)
-          echo "📄 Dateien:"
-          echo "$FILES"
-
+          # Erzeuge PDF im Container – Dateiliste im Container generieren (keine Host-Interpolation)
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
             pandoc/latex:latest \
-            pandoc $(echo "$FILES" | sed 's#^#./#') \
-              --from gfm \
-              --toc --toc-depth=3 \
-              --pdf-engine=xelatex \
-              -V mainfont="DejaVu Sans" \
-              -V papersize=A4 \
-              -V geometry:margin=20mm \
-              --metadata title="Project Documentation" \
-              -o build/site/documentation.pdf
+            bash -lc '
+              set -e
+              echo "ℹ️ Quelle: '"$SRC_DIR"'"
+              # Falls es wirklich nur EINE Datei gibt, funktioniert das genauso.
+              find '"$SRC_DIR"' -type f -name "*.md" -print0 | sort -z | \
+              xargs -0 -r pandoc \
+                --from=gfm \
+                --toc --toc-depth=3 \
+                --pdf-engine=xelatex \
+                -V mainfont="DejaVu Sans" \
+                -V papersize=A4 \
+                -V geometry:margin=20mm \
+                --metadata title="Project Documentation" \
+                -o build/site/documentation.pdf
+            '
+
       - name: Validate PDF output
         run: |
           test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
           echo "✅ PDF erzeugt: build/site/documentation.pdf"
+
 
       - name: Create the container
         run: |
