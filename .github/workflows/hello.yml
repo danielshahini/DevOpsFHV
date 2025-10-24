@@ -116,7 +116,7 @@ jobs:
               --from gfm \
               --toc --toc-depth=3 \
               --pdf-engine=xelatex \
-              -V mainfont="DejaVu Sans" \
+              -V mainfont="TeX Gyre Heros" \
               -V papersize=A4 \
               -V geometry:margin=20mm \
               --metadata title="Project Documentation" \
