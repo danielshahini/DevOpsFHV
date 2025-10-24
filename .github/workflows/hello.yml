@@ -122,24 +122,22 @@ jobs:
             -v "${PWD}:/data" \
             -w /data \
             pandoc/latex:latest \
-            bash -c '
+            bash -c "
               set -euo pipefail
-              mapfile -t FILES < <(find '"$SRC_DIR"' -type f -name "*.md" -print | sort)
-              [ ${#FILES[@]} -gt 0 ] || { echo "❌ Keine Markdown-Dateien gefunden"; exit 1; }
-              echo "📄 Dateien:"
-              printf " - %s\n" "${FILES[@]}"
-
-              pandoc "${FILES[@]}" \
+              FILES=\$(find $SRC_DIR -type f -name '*.md' | sort | tr '\n' ' ')
+              echo '📄 Dateien:'
+              echo \"\$FILES\"
+              pandoc \$FILES \
                 --from gfm+emoji \
                 --toc --toc-depth=3 \
                 --pdf-engine=xelatex \
-                -V mainfont="DejaVu Sans" \
+                -V mainfont='DejaVu Sans' \
                 -V papersize=A4 \
                 -V geometry:margin=20mm \
-                --resource-path=.:'"$SRC_DIR"' \
-                --metadata title="Project Documentation" \
+                --resource-path=.:$SRC_DIR \
+                --metadata title='Project Documentation' \
                 -o build/site/documentation.pdf
-            '
+            "
       - name: Validate PDF output
         run: |
           test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
