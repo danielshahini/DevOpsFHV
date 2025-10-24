@@ -94,7 +94,6 @@ jobs:
             -v "${PWD}:/docs" \
             -w /docs \
             squidfunk/mkdocs-material \
-            build -d /docs/build/site \
             sh -lc "pip install --no-cache-dir mkdocs-print-site-plugin && mkdocs build -d /docs/build/site"
 
           echo "📂 Inhalt von build/site nach MkDocs-Build:"
