@@ -105,7 +105,47 @@ jobs:
             exit 1
           fi
           echo "✅ Documentation successfully built!"
-    
+
+      - name: Build PDF with Pandoc (LaTeX)
+        run: |
+          set -euo pipefail
+          mkdir -p build/site
+
+          # docs-Verzeichnis ermitteln (docs/ oder doc/)
+          SRC_DIR="docs"
+          [ -d "docs" ] || SRC_DIR="doc"
+          [ -d "$SRC_DIR" ] || { echo "❌ Weder docs/ noch doc/ gefunden"; exit 1; }
+
+          echo "ℹ️  Verwende Quellverzeichnis: $SRC_DIR"
+
+          # PDF mit Pandoc/LaTeX erzeugen (XeLaTeX = gute Unicode/Fonts)
+          docker run --rm \
+            -v "${PWD}:/data" \
+            -w /data \
+            pandoc/latex:latest \
+            sh -lc '
+              set -euo pipefail
+              mapfile -t FILES < <(find '"$SRC_DIR"' -type f -name "*.md" -print | sort)
+              [ ${#FILES[@]} -gt 0 ] || { echo "❌ Keine Markdown-Dateien gefunden"; exit 1; }
+              echo "📄 Dateien:"
+              printf " - %s\n" "${FILES[@]}"
+
+              pandoc "${FILES[@]}" \
+                --from gfm+emoji \
+                --toc --toc-depth=3 \
+                --pdf-engine=xelatex \
+                -V mainfont="DejaVu Sans" \
+                -V papersize=A4 \
+                -V geometry:margin=20mm \
+                --resource-path=.:'"$SRC_DIR"' \
+                --metadata title="Project Documentation" \
+                -o build/site/documentation.pdf
+            '
+
+      - name: Validate PDF output
+        run: |
+          test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
+          echo "✅ PDF erzeugt: build/site/documentation.pdf"
 
       - name: Create the container
         run: |

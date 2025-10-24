@@ -5,3 +5,4 @@ COPY build/site/search /usr/share/nginx/html/search
 COPY build/site/404.html /usr/share/nginx/html/404.html
 COPY build/site/sitemap.xml /usr/share/nginx/html/sitemap.xml
 COPY build/site/sitemap.xml.gz /usr/share/nginx/html/sitemap.xml.gz
+COPY build/site/documentation.pdf  /usr/share/nginx/html
