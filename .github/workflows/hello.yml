@@ -111,19 +111,18 @@ jobs:
           set -euo pipefail
           mkdir -p build/site
 
-          # docs-Verzeichnis ermitteln (docs/ oder doc/)
           SRC_DIR="docs"
           [ -d "docs" ] || SRC_DIR="doc"
           [ -d "$SRC_DIR" ] || { echo "❌ Weder docs/ noch doc/ gefunden"; exit 1; }
 
           echo "ℹ️  Verwende Quellverzeichnis: $SRC_DIR"
 
-          # PDF mit Pandoc/LaTeX erzeugen (XeLaTeX = gute Unicode/Fonts)
+          # PDF mit Pandoc/LaTeX erzeugen
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
             pandoc/latex:latest \
-            sh -lc '
+            bash -c '
               set -euo pipefail
               mapfile -t FILES < <(find '"$SRC_DIR"' -type f -name "*.md" -print | sort)
               [ ${#FILES[@]} -gt 0 ] || { echo "❌ Keine Markdown-Dateien gefunden"; exit 1; }
@@ -141,7 +140,6 @@ jobs:
                 --metadata title="Project Documentation" \
                 -o build/site/documentation.pdf
             '
-
       - name: Validate PDF output
         run: |
           test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
