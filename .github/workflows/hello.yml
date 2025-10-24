@@ -86,17 +86,18 @@ jobs:
           echo "Using user and group $(id -u):$(id -g) for the whole folder."
           docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
       - uses: actions/checkout@v4
-      - name: Build the documentation (HTML + print page)
+      - name: Build the documentation
         run: |
-            # MkDocs im Container ausführen und Plugin installieren
-            docker run --rm \
-              -u "$(id -u):$(id -g)" \
-              -v "${PWD}:/docs" \
-              -w /docs \
-              squidfunk/mkdocs-material \
-              sh -lc "pip install --no-cache-dir mkdocs-print-site-plugin && mkdocs build -d /docs/build/site"
-            echo "📂 Inhalt von build/site nach MkDocs-Build:"
-            ls -R build/site
+          # MkDocs richtig im gemounteten Ordner ausführen
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "${PWD}:/docs" \
+            -w /docs \
+            squidfunk/mkdocs-material \
+            build -d /docs/build/site
+
+          echo "📂 Inhalt von build/site nach MkDocs-Build:"
+          ls -R build/site
       - name: Validate build output
         run: |
           if [ ! -f build/site/doc/index.html ]; then
@@ -104,6 +105,14 @@ jobs:
             exit 1
           fi
           echo "✅ Documentation successfully built!"
+      - name: Build print page (zusätzlicher Build mit Plugin)
+        run: |
+            docker run --rm \
+              -u "$(id -u):$(id -g)" \
+              -v "${PWD}:/docs" \
+              -w /docs \
+              squidfunk/mkdocs-material \
+              sh -lc "pip install --no-cache-dir mkdocs-print-site-plugin && mkdocs build -d /docs/build/site"
 
       - name: Generate single PDF from print page
         run: |
