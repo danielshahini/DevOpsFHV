@@ -117,17 +117,15 @@ jobs:
 
           echo "ℹ️ Verwende Quellverzeichnis: $SRC_DIR"
 
-          # Liste der Dateien für den Pandoc-Aufruf generieren
           FILES=$(find "$SRC_DIR" -type f -name "*.md" | sort)
           echo "📄 Dateien:"
           echo "$FILES"
 
-          # PDF direkt mit Pandoc erzeugen (außerhalb von Bash in Docker)
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
             pandoc/latex:latest \
-            pandoc $FILES \
+            pandoc $(echo "$FILES" | sed 's#^#./#') \
               --from gfm \
               --toc --toc-depth=3 \
               --pdf-engine=xelatex \
