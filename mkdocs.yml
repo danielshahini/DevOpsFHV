@@ -2,7 +2,3 @@ site_name: My Project Documentation
 
 nav:
   - Home: doc.md
-
-plugins:
-  - search
-  - print-site
