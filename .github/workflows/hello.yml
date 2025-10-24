@@ -86,18 +86,17 @@ jobs:
           echo "Using user and group $(id -u):$(id -g) for the whole folder."
           docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
       - uses: actions/checkout@v4
-      - name: Build the documentation
+      - name: Build the documentation (HTML + print page)
         run: |
-          # MkDocs richtig im gemounteten Ordner ausführen
-          docker run --rm \
-            -u "$(id -u):$(id -g)" \
-            -v "${PWD}:/docs" \
-            -w /docs \
-            squidfunk/mkdocs-material \
-            build -d /docs/build/site
-
-          echo "📂 Inhalt von build/site nach MkDocs-Build:"
-          ls -R build/site
+            # MkDocs im Container ausführen und Plugin installieren
+            docker run --rm \
+              -u "$(id -u):$(id -g)" \
+              -v "${PWD}:/docs" \
+              -w /docs \
+              squidfunk/mkdocs-material \
+              sh -lc "pip install --no-cache-dir mkdocs-print-site-plugin && mkdocs build -d /docs/build/site"
+            echo "📂 Inhalt von build/site nach MkDocs-Build:"
+            ls -R build/site
       - name: Validate build output
         run: |
           if [ ! -f build/site/doc/index.html ]; then
@@ -105,6 +104,27 @@ jobs:
             exit 1
           fi
           echo "✅ Documentation successfully built!"
+
+      - name: Generate single PDF from print page
+        run: |
+            # /print_page(.html) -> PDF in build/site/documentation.pdf
+            docker run --rm \
+            -v "${PWD}/build/site:/site" \
+            zenika/alpine-chrome \
+            --no-sandbox --headless --disable-gpu \
+            --print-to-pdf=/site/documentation.pdf \
+            file:///site/print_page.html || \
+            docker run --rm \
+            -v "${PWD}/build/site:/site" \
+            zenika/alpine-chrome \
+            --no-sandbox --headless --disable-gpu \
+            --print-to-pdf=/site/documentation.pdf \
+            file:///site/print_page/index.html
+
+            - name: Validate PDF output
+              run: |
+                test -f build/site/documentation.pdf || (echo "❌ PDF nicht gefunden!"; exit 1)
+                echo "✅ PDF erzeugt: build/site/documentation.pdf"
       - name: Create the container
         run: |
           # Just to be safe: Remove eventually existing images.
