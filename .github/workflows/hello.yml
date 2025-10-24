@@ -116,7 +116,6 @@ jobs:
               --from gfm \
               --toc --toc-depth=3 \
               --pdf-engine=xelatex \
-              -V mainfont="Latin Modern Roman" \
               -V papersize=A4 \
               -V geometry:margin=20mm \
               --metadata title="Project Documentation" \
