@@ -145,5 +145,21 @@ jobs:
         run: |
           # Run the integration test from the file "integrationtest.sh" against the running documentation image.
           docker run --name docintegrationtest --network host --rm -v "${PWD}/integrationtest.sh:/integrationtest.sh:ro" ellerbrock/alpine-bash-curl-ssl bash /integrationtest.sh
-      
-      
+      - name: Create SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+      - name: Add production host to known_hosts
+        run: |
+          ssh-keyscan -H 10.0.40.191 >> known_hosts
+
+      - name: Deploy to production
+        run: |
+          ssh -i key.pem -o UserKnownHostsFile=known_hosts svcgithub@10.0.40.191 '
+            docker stop $(docker ps -q) || true
+            docker rm $(docker ps -a -q) || true
+            docker rmi $(docker images -q) || true
+            docker run -d --restart always -p 1911:8080 my_spring_container
+            docker run -d --restart always -p 1912:80 my_doc_container
+          '
+
