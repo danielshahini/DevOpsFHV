@@ -151,11 +151,11 @@ jobs:
           chmod 600 key.pem
       - name: Add production host to known_hosts
         run: |
-          ssh-keyscan -H 10.0.40.191 >> known_hosts
+          ssh-keyscan -H 10.0.40.194 >> known_hosts
 
       - name: Deploy to production
         run: |
-          ssh -i key.pem -o UserKnownHostsFile=known_hosts svcgithub@10.0.40.191 '
+          ssh -i key.pem -o UserKnownHostsFile=known_hosts svcgithub@10.0.40.194 '
             docker run -d --restart always -p 1911:8080 my_spring_container
             docker run -d --restart always -p 1912:80 my_doc_container
           '
