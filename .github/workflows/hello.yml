@@ -133,6 +133,12 @@ jobs:
           # Build the documentation image
           docker build -f Dockerfile.nginx -t my-documentation .
           docker image ls --all
+
+      - name: Tag & push documentation image
+        run: |
+          docker tag my-documentation:latest 10.0.40.193:5000/team191/my-documentation:latest
+          docker push 10.0.40.193:5000/team191/my-documentation:latest
+          
       - name: Run the documentation container
         run: |
           # Just to be safe: Stop and remove eventually existing containers.
