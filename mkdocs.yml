@@ -3,7 +3,18 @@ site_name: My Project Documentation
 nav:
   - Home: doc.md
 
+theme:
+  name: material
+  features:
+    - toc.integrate
+    - navigation.sections
+    - navigation.indexes
 markdown_extensions:
   - toc:
       permalink: true
       toc_depth: 3
+  - admonition
+  - footnotes
+  - tables
+  - attr_list
+  - md_in_html
