@@ -2,3 +2,8 @@ site_name: My Project Documentation
 
 nav:
   - Home: doc.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 3

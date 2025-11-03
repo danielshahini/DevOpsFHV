@@ -1,5 +1,7 @@
 # DevOps Course - Project Documentation
 
+[TOC]
+
 ## Introduction
 
 This document captures the work completed as part of the DevOps course (024717050608).
@@ -100,7 +102,7 @@ This workflow automates building, testing, quality analysis, and documentation d
 
 ### Environment
 - **Runner:** `self-hosted`
-- **Core Tools:** Docker, SonarQube, MkDocs Material
+- **Core Tools:** Docker, SonarQube, MkDocs Material, Pandoc/LaTeX
 
 ---
 
@@ -194,6 +196,8 @@ Runs a full SonarQube scan using Docker:
 
 ```bash
 docker run --rm   -e SONAR_HOST_URL=http://10.0.40.193:9000/   -e SONAR_TOKEN=<SECRET_TOKEN>   -v $(pwd):/usr/src   sonarsource/sonar-scanner-cli:latest     -Dsonar.projectKey=simplebankingsystem     -Dsonar.sources=.     -Dsonar.java.binaries=target/classes
+  -Dsonar.host.url=http://10.0.40.193:9000/
+  -Dsonar.login=<SECRET_TOKEN>
 ```
 
 This ensures **code quality**, **coverage**, and **security compliance** before deployment.
@@ -209,11 +213,28 @@ docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id
 
 ---
 
+### 📥 Repository Checkout (Docs Stage)
+Refreshes the workspace before building the documentation site:
+
+```yaml
+uses: actions/checkout@v4
+```
+
+---
+
 ### 📚 Documentation Build (MkDocs)
 Builds project documentation inside a `squidfunk/mkdocs-material` container:
 
 ```bash
-docker run --rm   -u "$(id -u):$(id -g)"   -v "${PWD}:/docs"   -w /docs   squidfunk/mkdocs-material   build -d /docs/build/site
+docker run --rm \
+  -u "$(id -u):$(id -g)" \
+  -v "${PWD}:/docs" \
+  -w /docs \
+  squidfunk/mkdocs-material \
+  build -d /docs/build/site
+
+echo "📂 Inhalt von build/site nach MkDocs-Build:"
+ls -R build/site
 ```
 
 ---
@@ -231,11 +252,50 @@ echo "✅ Documentation successfully built!"
 
 ---
 
+### 📄 PDF Build (Pandoc/LaTeX)
+Renders the documentation as a PDF using Pandoc with the LaTeX engine:
+
+```bash
+docker run --rm \
+  -v "${PWD}:/data" \
+  -w /data \
+  pandoc/latex:latest \
+  ./docs/doc.md \
+    --from gfm \
+    --toc --toc-depth=3 \
+    --pdf-engine=xelatex \
+    -V papersize=A4 \
+    -V geometry:margin=20mm \
+    --metadata title="Project Documentation" \
+    -o build/site/documentation.pdf
+```
+
+---
+
+### 🧾 PDF Validation
+Verifies the PDF has been generated successfully:
+
+```bash
+test -f build/site/documentation.pdf || (echo "❌ PDF not found!"; exit 1)
+echo "✅ PDF created: build/site/documentation.pdf"
+```
+
+---
+
 ### 🌐 Documentation Deployment
 Builds and deploys an Nginx container serving the generated docs:
 
 ```bash
+# Just to be safe: Remove eventually existing images.
+docker image rm my-documentation || true
+
+# Build the documentation image
 docker build -f Dockerfile.nginx -t my-documentation .
+
+# List images for diagnostics
+docker image ls --all
+
+# Run the documentation image
 docker run --name mydoc -d --restart always -p 8081:80 my-documentation
 ```
 
@@ -250,12 +310,5 @@ docker run --name docintegrationtest --network host --rm   -v "${PWD}/integratio
 
 ---
 
-## ✅ Final Results
-
-- Clean and reproducible builds
-- Automated backend and documentation deployment
-- Static code analysis via SonarQube
-- Integration tests to validate running containers
-- MkDocs-based documentation automatically served via Nginx
 
 ---
