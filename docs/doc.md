@@ -1,7 +1,5 @@
 # DevOps Course - Project Documentation
 
-[TOC]
-
 ## Introduction
 
 This document captures the work completed as part of the DevOps course (024717050608).
