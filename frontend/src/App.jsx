@@ -6,15 +6,17 @@ import NewAccount from "./pages/NewAccount";
 export default function App() {
     return (
         <BrowserRouter>
-            <nav style={{display:"flex", gap: 12, padding: 12}}>
+            <nav>
                 <Link to="/">Accounts</Link>
                 <Link to="/new">New</Link>
             </nav>
-            <Routes>
-                <Route path="/" element={<AccountsList />} />
-                <Route path="/accounts/:name" element={<AccountDetail />} />
-                <Route path="/new" element={<NewAccount />} />
-            </Routes>
+            <main>
+                <Routes>
+                    <Route path="/" element={<AccountsList />} />
+                    <Route path="/accounts/:name" element={<AccountDetail />} />
+                    <Route path="/new" element={<NewAccount />} />
+                </Routes>
+            </main>
         </BrowserRouter>
     );
 }

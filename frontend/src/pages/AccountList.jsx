@@ -41,7 +41,7 @@ export default function AccountsList() {
                         {" — "}
                         <strong>{a.balance}</strong>
                         {" "}
-                        <button onClick={() => onDelete(a.name)}>Löschen</button>
+                        <button className="danger" onClick={() => onDelete(a.name)}>Löschen</button>
                     </li>
                 ))}
             </ul>
