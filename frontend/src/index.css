@@ -196,3 +196,61 @@ input:focus {
 .actions button {
     width: 100%;
 }
+
+ul {
+    list-style: none;
+    margin: 16px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+}
+
+li:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+}
+
+li a {
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+li a:hover {
+    text-decoration: underline;
+}
+
+li strong {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #111827;
+}
+
+li button {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+li button:hover {
+    background: #dc2626;
+}
