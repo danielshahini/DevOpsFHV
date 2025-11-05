@@ -7,7 +7,7 @@ theme:
     - content.code.copy
 nav:
   - API: http://10.0.40.191:8080/swagger-ui/index.html
-  - Accounts: https://http://10.0.40.194:1911/
+  - Accounts: http://10.0.40.194:1911/
 markdown_extensions:
   - admonition
   - toc:
