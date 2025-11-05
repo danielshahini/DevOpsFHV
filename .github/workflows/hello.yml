@@ -72,16 +72,17 @@ jobs:
         run: |
           docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
 
-      - name: Build the html documentation and PDF
+      - name: Build the documentation and PDF
         run: |
-          
-           docker run --rm \
+          # Build HTML docs
+          docker run --rm \
             -u "$(id -u):$(id -g)" \
             -v "${PWD}:/docs" \
             -w /docs \
             squidfunk/mkdocs-material \
-            build -d /docs/build/site 
+            build -d /docs/build/site
           
+          # Build PDF
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
@@ -96,8 +97,9 @@ jobs:
               -o build/site/documentation.pdf
           
           # Validierungen
-          test -f build/site/doc/index.html || (echo "MkDocs output missing!" && exit 1)
+          test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
+
 
       - name: Build & push documentation image
         run: |
