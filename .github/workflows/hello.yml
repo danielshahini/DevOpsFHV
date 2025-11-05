@@ -45,30 +45,30 @@ jobs:
 
       - name: Build & push documentation image
         run: |
-          # Build HTML documentation and PDF
           docker run --rm \
             -u "$(id -u):$(id -g)" \
             -v "${PWD}:/docs" \
             -w /docs \
-            squidfunk/mkdocs-material build
+            squidfunk/mkdocs-material \
+            build -d /docs/build/site
 
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
-            pandoc/latex:latest ./docs/doc.md \
-              --from gfm \
-              --toc --toc-depth=3 \
-              --pdf-engine=xelatex \
-              -V papersize=A4 \
-              -V geometry:margin=20mm \
-              --metadata title="Project Documentation" \
-              -o site/documentation.pdf
+            pandoc/latex:latest \
+            ./docs/doc.md \
+            --from gfm \
+            --toc --toc-depth=3 \
+            --pdf-engine=xelatex \
+            -V papersize=A4 \
+            -V geometry:margin=20mm \
+            --metadata title="Project Documentation" \
+            -o build/site/documentation.pdf
 
           test -f site/doc/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f site/documentation.pdf || (echo "PDF output missing!" && exit 1)
-          echo "✅ Documentation built."
 
-          docker build -f Dockerfile.nginx -t my-documentation ./site
+          docker build -f Dockerfile.nginx -t my-documentation . 
           docker tag my-documentation:latest 10.0.40.193:5000/team191/my-documentation:latest
           docker push 10.0.40.193:5000/team191/my-documentation:latest
 
