@@ -35,7 +35,7 @@ jobs:
             simplebankingsystem:latest
 
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
-          docker exec simplebankingsystem chmod +x /integration_test.sh
+          docker exec simplebankingsystem chmod +x /integrations_test.sh
           docker exec simplebankingsystem /integration_test.sh
 
       - name: Tag & push backend image
