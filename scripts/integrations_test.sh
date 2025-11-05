@@ -33,30 +33,30 @@ curl -sf -X POST "$BASE_URL/createAccount?name=$USER" -H 'accept: */*' -d '' > /
 echo -e "${GREEN}✅ Account erfolgreich angelegt.${NO_COLOR}"
 
 # Hilfsfunktion: aktuellen Kontostand holen
-get_balaNO_COLORe() {
-  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' | jq -r '.balaNO_COLORe'
+get_balance() {
+  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' | jq -r '.balance'
 }
 
-# StartbalaNO_COLORe prüfen
-BALANO_COLORE=$(get_balaNO_COLORe)
+# Startbalance prüfen
+BALANO_COLORE=$(get_balance)
 if [[ "$BALANO_COLORE" != "0" ]]; then
-  echo -e "${RED}❌ Erwartet BalaNO_COLORe=0, erhalten: $BALANO_COLORE${NO_COLOR}"
+  echo -e "${RED}❌ Erwartet Balance=0, erhalten: $BALANO_COLORE${NO_COLOR}"
   exit 1
 else
-  echo -e "${GREEN}✅ StartbalaNO_COLORe korrekt: 0${NO_COLOR}"
+  echo -e "${GREEN}✅ Startbalance korrekt: 0${NO_COLOR}"
 fi
 
 # Einzahlung durchführen
 echo -e "${YELLOW}💰 Zahle 200 ein...${NO_COLOR}"
 curl -sf -X POST "$BASE_URL/$USER/deposit?value=200" -H 'accept: */*' -d '' > /dev/null
 
-# Neue BalaNO_COLORe prüfen
-BALANO_COLORE=$(get_balaNO_COLORe)
+# Neue Balance prüfen
+BALANO_COLORE=$(get_balance)
 if [[ "$BALANO_COLORE" != "200" ]]; then
-  echo -e "${RED}❌ Erwartet BalaNO_COLORe=200, erhalten: $BALANO_COLORE${NO_COLOR}"
+  echo -e "${RED}❌ Erwartet Balance=200, erhalten: $BALANO_COLORE${NO_COLOR}"
   exit 1
 else
-  echo -e "${GREEN}✅ BalaNO_COLORe nach Einzahlung korrekt: 200${NO_COLOR}"
+  echo -e "${GREEN}✅ Balance nach Einzahlung korrekt: 200${NO_COLOR}"
 fi
 
 echo -e "${GREEN}🎉 Integrationstest erfolgreich abgeschlossen!${NO_COLOR}"
