@@ -64,7 +64,7 @@ jobs:
               --metadata title="Project Documentation" \
               -o site/documentation.pdf
 
-          test -f site/index.html || (echo "MkDocs output missing!" && exit 1)
+          test -f site/doc/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f site/documentation.pdf || (echo "PDF output missing!" && exit 1)
           echo "✅ Documentation built."
 
