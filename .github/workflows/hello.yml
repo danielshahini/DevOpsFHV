@@ -57,15 +57,15 @@ jobs:
             -w /data \
             pandoc/latex:latest \
             ./docs/doc.md \
-            --from gfm \
-            --toc --toc-depth=3 \
-            --pdf-engine=xelatex \
-            -V papersize=A4 \
-            -V geometry:margin=20mm \
-            --metadata title="Project Documentation" \
-            -o build/site/documentation.pdf
+              --from gfm \
+              --toc --toc-depth=3 \
+              --pdf-engine=xelatex \
+              -V papersize=A4 \
+              -V geometry:margin=20mm \
+              --metadata title="Project Documentation" \
+              -o build/site/documentation.pdf
 
-          test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
+          test -f build/site/doc/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
 
           docker build -f Dockerfile.nginx -t my-documentation . 
