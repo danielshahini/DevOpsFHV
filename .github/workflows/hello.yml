@@ -97,7 +97,7 @@ jobs:
               -o build/site/documentation.pdf
           
           # Validierungen
-          test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
+          test -f build/site/doc/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
 
 
