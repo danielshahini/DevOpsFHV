@@ -24,9 +24,6 @@ jobs:
             --tag simplebankingsystem:latest \
             --tag simplebankingsystem:$(date +%s)
 
-      - name: Run Docker Hello World
-        run: docker run hello-world
-
       - name: Run Docker Simple Banking System
         run: |
           docker run -d \
