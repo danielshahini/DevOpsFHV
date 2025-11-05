@@ -21,9 +21,9 @@ jobs:
 
       - name: Build backend image
         run: |
-          docker build . -f Dockerfile \
+          container_id=$(docker build . -f Dockerfile \
             -t simplebankingsystem:latest \
-            -t simplebankingsystem:$(date +%s)
+            -t simplebankingsystem:$(date +%s))
 
       - name: Run integration tests
         run: |
@@ -42,6 +42,21 @@ jobs:
         run: |
           docker tag simplebankingsystem:latest 10.0.40.193:5000/team191/simplebankingsystem:latest
           docker push 10.0.40.193:5000/team191/simplebankingsystem:latest
+
+      - name: Run SonarQube analysis inside sonar image
+        run: |
+          mkdir -p target
+          docker cp "$container_id":/app/target/classes ./target/classes
+          docker run --rm \
+            -e SONAR_HOST_URL=http://10.0.40.193:9000/ \
+            -e SONAR_TOKEN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \
+            -v $(pwd):/usr/src \
+            sonarsource/sonar-scanner-cli:latest \
+              -Dsonar.projectKey=simplebankingsystem \
+              -Dsonar.sources=. \
+              -Dsonar.java.binaries=target/classes \
+              -Dsonar.host.url=http://10.0.40.193:9000/ \
+              -Dsonar.login=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97
 
       - name: Build & push documentation image
         run: |
