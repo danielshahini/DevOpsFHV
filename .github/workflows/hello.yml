@@ -18,22 +18,21 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-# MERGE???
-      - name: Build backend image
+
+      - name: Build image & Run backend
         run: |
           docker build . -f Dockerfile \
             -t simplebankingsystem:latest \
             -t simplebankingsystem:$(date +%s)
-
-      - name: Run integration tests
-        run: |
           docker run -d \
             --name simplebankingsystem \
             --restart unless-stopped \
             --network host \
             -p 8080:8080 \
             simplebankingsystem:latest
-# MERGE???
+
+      - name: Run integration tests
+        run: |
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
           docker exec simplebankingsystem chmod +x /integration_test.sh
           docker exec simplebankingsystem /integration_test.sh
