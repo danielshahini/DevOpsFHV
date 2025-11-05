@@ -3,7 +3,7 @@
 ## 1. Project Overview
 
 The **Simple Banking System** is a full-stack web application designed to demonstrate modern software development practices and DevOps principles. The system provides a comprehensive banking solution that enables users to manage bank accounts and perform essential financial transactions through an intuitive web interface.
-
+The project is available on: https://github.com/danielshahini/DevOpsFHV
 ### Purpose
 
 This project exists as an educational exercise for the DevOps course, serving as a practical implementation of:
