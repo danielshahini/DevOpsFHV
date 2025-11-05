@@ -36,71 +36,7 @@ The Simple Banking System follows a three-tier architecture pattern, separating 
 
 ### System Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         User Browser                            │
-└───────────────────────┬─────────────────────────────────────────┘
-                        │
-                        │ HTTP Requests
-                        │
-┌───────────────────────▼─────────────────────────────────────────┐
-│                    Frontend Layer                               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  React Application (Vite)                                │   │
-│  │  - AccountList.jsx                                       │   │
-│  │  - AccountDetail.jsx                                     │   │
-│  │  - NewAccount.jsx                                        │   │
-│  │  Port: 5173                                              │   │
-│  └────────────────────┬─────────────────────────────────────┘   │
-│                       │                                         │
-│                       │ API Proxy (/api/*)                      │
-│                       │                                         │
-└───────────────────────┼─────────────────────────────────────────┘
-                        │
-                        │ HTTP/REST API
-                        │ (localhost:8080)
-                        │
-┌───────────────────────▼─────────────────────────────────────────┐
-│                    Backend Layer (Spring Boot)                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  REST API Controller                                     │   │
-│  │  - AccountController                                     │   │
-│  │  - Base Path: /api/v1/accounts                           │   │
-│  │  - CORS: http://localhost:5173                           │   │
-│  └────────────────────┬─────────────────────────────────────┘   │
-│                       │                                         │
-│                       │ Service Layer                           │
-│                       │                                         │
-│  ┌────────────────────▼─────────────────────────────────────┐   │
-│  │  Business Logic Service                                  │   │
-│  │  - AccountService                                        │   │
-│  │  - Transaction processing                                │   │
-│  │  - Business rules validation                             │   │
-│  └────────────────────┬─────────────────────────────────────┘   │
-│                       │                                         │
-│                       │ Repository Interface                    │
-│                       │                                         │
-│  ┌────────────────────▼─────────────────────────────────────┐   │
-│  │  Data Access Layer                                       │   │
-│  │  - AccountRepository (Spring Data JPA)                   │   │
-│  │  - Custom queries for account operations                 │   │
-│  └────────────────────┬─────────────────────────────────────┘   │
-│                       │                                         │
-│  Port: 8080           |                                         │
-└───────────────────────┼─────────────────────────────────────────┘
-                        │
-                        │ JDBC (H2 Dialect)
-                        │
-┌───────────────────────▼─────────────────────────────────────────┐
-│                    Database Layer                               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  H2 In-Memory Database                                   │   │
-│  │  - Database: BankDatabase                                │   │
-│  │  - H2 Console: /h2-console                               │   │
-│  │  - Embedded in Spring Boot application                   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+![Architecture Overview](./architecture.png)
 
 ### Component Description
 
@@ -352,6 +288,102 @@ Static code analysis is performed using SonarQube to identify code smells, bugs,
 ## 5. CI/CD Pipeline
 
 The project uses GitHub Actions for automated CI/CD. The pipeline triggers on every push to the `main` branch and consists of two main jobs.
+
+### Pipeline Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Push to main branch                           │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Build & Test Job                              │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 1. Cleanup & Checkout                                     │  │
+│  │    - Clean Docker containers/images                       │  │
+│  │    - Checkout repository code                             │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 2. Build Test Image & Run Integration Tests              │  │
+│  │    - Build Docker test image                             │  │
+│  │    - Run container & execute integration tests           │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 3. Build Production Image                                 │  │
+│  │    - Build production Docker image                        │  │
+│  │    - Tag: latest + timestamp                              │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 4. Tag & Push to Registry                                 │  │
+│  │    - Tag image                                            │  │
+│  │    - Push to container registry                           │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 5. Extract Coverage Report                                │  │
+│  │    - Extract JaCoCo XML from build                        │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 6. SonarQube Analysis                                     │  │
+│  │    - Run SonarQube scanner                                │  │
+│  │    - Upload coverage & metrics                            │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 7. Build Documentation                                    │  │
+│  │    - Build MkDocs HTML site                               │  │
+│  │    - Generate PDF with Pandoc                             │  │
+│  │    - Build & push documentation container                 │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+└───────────────────────┼─────────────────────────────────────────┘
+                        │
+                        │ (needs: build_and_test)
+                        │
+┌───────────────────────▼─────────────────────────────────────────┐
+│                    Deploy Job                                    │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 1. Setup SSH Connection                                   │  │
+│  │    - Create SSH key from secrets                          │  │
+│  │    - Add production server to known_hosts                 │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 2. Deploy Containers                                      │  │
+│  │    - Pull latest images from registry                     │  │
+│  │    - Stop & remove old containers                         │  │
+│  │    - Deploy Spring Boot app (port 1911)                   │  │
+│  │    - Deploy documentation (port 1912)                     │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ 3. Verify Deployment                                      │  │
+│  │    - Health check Spring Boot app                         │  │
+│  │    - Verify documentation site                            │  │
+│  └────────────────────┬─────────────────────────────────────┘  │
+│                       │                                         │
+└───────────────────────┼─────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              Production Deployment Complete                      │
+│  - Application: http://10.0.40.194:1911                         │
+│  - Documentation: http://10.0.40.194:1912                       │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### Build & Test Job
 
