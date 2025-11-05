@@ -5,7 +5,7 @@ BASE_URL="http://localhost:8080/api/v1/accounts"
 HEALTH_URL="http://localhost:8080/actuator/health"
 USER="testuser"
 
-GREEN="\033[0;32m"
+GREEN="\033[38;2;0;255;64m"
 RED="\033[0;31m"
 YELLOW="\033[38;2;255;215;0m"
 NO_COLOR="\033[0m"
