@@ -19,8 +19,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Build test image & Run test backend
+        run: |
+          docker build . -f Dockerfile \
+            -t simplebankingsystem:test 
+          docker run -d \
+            --name simplebankingsystem \
+            --restart unless-stopped \
+            --network host \
+            -p 8080:8080 \
+            simplebankingsystem:test
+
+      - name: Run integration tests
+        run: |
+          docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
+          docker exec simplebankingsystem chmod +x /integration_test.sh
+          docker exec simplebankingsystem /integration_test.sh
+
       - name: Build image & Run backend
         run: |
+          docker stop simplebankingsystem
           docker build . -f Dockerfile \
             -t simplebankingsystem:latest \
             -t simplebankingsystem:$(date +%s)
@@ -30,12 +48,6 @@ jobs:
             --network host \
             -p 8080:8080 \
             simplebankingsystem:latest
-
-      - name: Run integration tests
-        run: |
-          docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
-          docker exec simplebankingsystem chmod +x /integration_test.sh
-          docker exec simplebankingsystem /integration_test.sh
 
       - name: Tag & push backend image
         run: |
