@@ -26,7 +26,7 @@ jobs:
 
       - name: Run Docker Hello World
         run: docker run hello-world
-      
+
       - name: Run Docker Simple Banking System
         run: |
           docker run -d \
@@ -35,7 +35,7 @@ jobs:
             --network host \
             -p 8080:8080 \
             simplebankingsystem:latest
-      
+
       - name: Run integration tests inside container
         run: |
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
@@ -50,7 +50,7 @@ jobs:
 
       - name: Build build‑stage image
         run: docker build . --target build -t simplebankingsystem-build
-      
+
       - name: Extract compiled classes
         run: |
           container_id=$(docker create simplebankingsystem-build)
@@ -75,7 +75,7 @@ jobs:
         run: |
           docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
 
-      - name: Build the documentation
+      - name: Build the documentation and PDF
         run: |
           docker run --rm \
             -u "$(id -u):$(id -g)" \
@@ -83,19 +83,6 @@ jobs:
             -w /docs \
             squidfunk/mkdocs-material \
             build -d /docs/build/site \
-          echo " Inhalt von build/site nach MkDocs-Build:"
-          ls -R build/site
-
-      - name: Validate build output
-        run: |
-          if [ ! -f build/site/doc/index.html ]; then
-            echo " Documentation not built! build/site/index.html is missing."
-            exit 1
-          fi
-          echo " Documentation successfully built!"
-
-      - name: Build PDF with Pandoc (LaTeX)
-        run: |
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
@@ -108,21 +95,18 @@ jobs:
               -V geometry:margin=20mm \
               --metadata title="Project Documentation" \
               -o build/site/documentation.pdf
+          
+          # Validierungen
+          test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
+          test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
+          echo "Documentation and PDF successfully built!"
 
-      - name: Validate PDF output
-        run: |
-          test -f build/site/documentation.pdf || (echo " PDF nicht gefunden!"; exit 1)
-          echo " PDF erzeugt: build/site/documentation.pdf"
-
-      - name: Create the container
+      - name: Build & push documentation image
         run: |
           docker build -f Dockerfile.nginx -t my-documentation .
-
-      - name: Tag & push documentation image
-        run: |
           docker tag my-documentation:latest 10.0.40.193:5000/team191/my-documentation:latest
           docker push 10.0.40.193:5000/team191/my-documentation:latest
-          
+
       - name: Run the documentation container
         run: |
           docker run --name mydoc -d --restart always -p 8081:80 my-documentation
