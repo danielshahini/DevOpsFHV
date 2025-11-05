@@ -68,7 +68,7 @@ jobs:
           test -f site/documentation.pdf || (echo "PDF output missing!" && exit 1)
           echo "✅ Documentation built."
 
-          docker build -f Dockerfile.nginx -t my-documentation .
+          docker build -f Dockerfile.nginx -t my-documentation ./site
           docker tag my-documentation:latest 10.0.40.193:5000/team191/my-documentation:latest
           docker push 10.0.40.193:5000/team191/my-documentation:latest
 
