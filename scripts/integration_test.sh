@@ -1,42 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 BASE_URL="http://localhost:8080/api/v1/accounts"
+HEALTH_URL="http://localhost:8080/actuator/health"
 USER="testuser"
 
-echo "Warte auf Service..."
-sleep 25
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+YELLOW="\033[38;2;255;215;0m"
+NO_COLOR="\033[0m"
+
+echo -e "${YELLOW}Warte auf Service...${NO_COLOR}"
+
 for i in {1..20}; do
-  if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
-    echo "Service ist erreichbar!"
+  if curl -s "$HEALTH_URL" > /dev/null 2>&1; then
+    echo -e "${GREEN}Service ist erreichbar!${NO_COLOR}"
     break
   fi
-  echo "Noch nicht erreichbar, retry in 3s..."
+  echo -e "${YELLOW}Versuch $i/20 – noch nicht erreichbar, retry in 3s...${NO_COLOR}"
   sleep 3
+  if [ "$i" -eq 20 ]; then
+    echo -e "${RED}Service wurde nach 60s nicht erreichbar!${NO_COLOR}"
+    exit 1
+  fi
 done
 
-echo "Erstelle Account..."
-curl -s -X POST "$BASE_URL/createAccount?name=$USER" -H 'accept: */*' -d '' > /dev/null
+echo -e "${YELLOW}Erstelle Account...${NO_COLOR}"
+curl -sf -X POST "$BASE_URL/createAccount?name=$USER" -H 'accept: */*' -d '' > /dev/null
+echo -e "${GREEN}Account erfolgreich angelegt.${NO_COLOR}"
 
-echo "Prüfe Start-Balance..."
-BALANCE=$(curl -s -X GET "$BASE_URL/$USER" -H 'accept: */*' | grep -o '"balance":[0-9]*' | cut -d: -f2)
-if [ "$BALANCE" -ne 0 ]; then
-  echo "Erwartet: Balance = 0, bekommen: $BALANCE"
+get_balance() {
+  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' |
+      sed -n 's/.*"balance":\([0-9]\+\).*/\1/p'
+}
+
+BALANCE=$(get_balance)
+if [[ "$BALANCE" != "0" ]]; then
+  echo -e "${RED}Erwartet Balance=0, erhalten: $BALANCE${NO_COLOR}"
   exit 1
 else
-  echo "Balance am Anfang = 0"
+  echo -e "${GREEN}Startbalance korrekt: 0${NO_COLOR}"
 fi
 
-echo "Führe Einzahlung 200 durch..."
-curl -s -X POST "$BASE_URL/$USER/deposit?value=200" -H 'accept: */*' -d '' > /dev/null
+echo -e "${YELLOW}Zahle 200 ein...${NO_COLOR}"
+curl -sf -X POST "$BASE_URL/$USER/deposit?value=200" -H 'accept: */*' -d '' > /dev/null
 
-echo "Prüfe Balance nach Einzahlung..."
-BALANCE=$(curl -s -X GET "$BASE_URL/$USER" -H 'accept: */*' | grep -o '"balance":[0-9]*' | cut -d: -f2)
-if [ "$BALANCE" -ne 200 ]; then
-  echo "Erwartet: Balance = 200, bekommen: $BALANCE"
+BALANCE=$(get_balance)
+if [[ "$BALANCE" != "200" ]]; then
+  echo -e "${RED}Erwartet Balance=200, erhalten: $BALANCE${NO_COLOR}"
   exit 1
 else
-  echo "Balance nach Einzahlung = 200"
-  echo "Integrationstest erfolgreich!"
-  exit 0
+  echo -e "${GREEN}Balance nach Einzahlung korrekt: 200${NO_COLOR}"
 fi
+
+echo -e "${GREEN}Integrationstest erfolgreich abgeschlossen!${NO_COLOR}"
