@@ -11,52 +11,52 @@ RED="\033[0;31m"
 YELLOW="\033[1;33m"
 NO_COLOR="\033[0m"
 
-echo -e "${YELLOW}⏳ Warte auf Service...${NC}"
+echo -e "${YELLOW}⏳ Warte auf Service...${NO_COLOR}"
 
 # Warten bis Service erreichbar ist (max. 60s)
 for i in {1..20}; do
   if curl -s "$HEALTH_URL" > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ Service ist erreichbar!${NC}"
+    echo -e "${GREEN}✅ Service ist erreichbar!${NO_COLOR}"
     break
   fi
   echo -e "❗ Versuch $i/20 – noch nicht erreichbar, retry in 3s..."
   sleep 3
   if [ "$i" -eq 20 ]; then
-    echo -e "${RED}❌ Service wurde nach 60s nicht erreichbar!${NC}"
+    echo -e "${RED}❌ Service wurde nach 60s nicht erreichbar!${NO_COLOR}"
     exit 1
   fi
 done
 
 # Account anlegen
-echo -e "${YELLOW}👤 Erstelle Account...${NC}"
+echo -e "${YELLOW}👤 Erstelle Account...${NO_COLOR}"
 curl -sf -X POST "$BASE_URL/createAccount?name=$USER" -H 'accept: */*' -d '' > /dev/null
-echo -e "${GREEN}✅ Account erfolgreich angelegt.${NC}"
+echo -e "${GREEN}✅ Account erfolgreich angelegt.${NO_COLOR}"
 
 # Hilfsfunktion: aktuellen Kontostand holen
-get_balance() {
-  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' | jq -r '.balance'
+get_balaNO_COLORe() {
+  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' | jq -r '.balaNO_COLORe'
 }
 
-# Startbalance prüfen
-BALANCE=$(get_balance)
-if [[ "$BALANCE" != "0" ]]; then
-  echo -e "${RED}❌ Erwartet Balance=0, erhalten: $BALANCE${NC}"
+# StartbalaNO_COLORe prüfen
+BALANO_COLORE=$(get_balaNO_COLORe)
+if [[ "$BALANO_COLORE" != "0" ]]; then
+  echo -e "${RED}❌ Erwartet BalaNO_COLORe=0, erhalten: $BALANO_COLORE${NO_COLOR}"
   exit 1
 else
-  echo -e "${GREEN}✅ Startbalance korrekt: 0${NC}"
+  echo -e "${GREEN}✅ StartbalaNO_COLORe korrekt: 0${NO_COLOR}"
 fi
 
 # Einzahlung durchführen
-echo -e "${YELLOW}💰 Zahle 200 ein...${NC}"
+echo -e "${YELLOW}💰 Zahle 200 ein...${NO_COLOR}"
 curl -sf -X POST "$BASE_URL/$USER/deposit?value=200" -H 'accept: */*' -d '' > /dev/null
 
-# Neue Balance prüfen
-BALANCE=$(get_balance)
-if [[ "$BALANCE" != "200" ]]; then
-  echo -e "${RED}❌ Erwartet Balance=200, erhalten: $BALANCE${NC}"
+# Neue BalaNO_COLORe prüfen
+BALANO_COLORE=$(get_balaNO_COLORe)
+if [[ "$BALANO_COLORE" != "200" ]]; then
+  echo -e "${RED}❌ Erwartet BalaNO_COLORe=200, erhalten: $BALANO_COLORE${NO_COLOR}"
   exit 1
 else
-  echo -e "${GREEN}✅ Balance nach Einzahlung korrekt: 200${NC}"
+  echo -e "${GREEN}✅ BalaNO_COLORe nach Einzahlung korrekt: 200${NO_COLOR}"
 fi
 
-echo -e "${GREEN}🎉 Integrationstest erfolgreich abgeschlossen!${NC}"
+echo -e "${GREEN}🎉 Integrationstest erfolgreich abgeschlossen!${NO_COLOR}"
