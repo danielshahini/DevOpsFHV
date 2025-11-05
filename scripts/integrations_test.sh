@@ -34,13 +34,14 @@ echo -e "${GREEN}✅ Account erfolgreich angelegt.${NO_COLOR}"
 
 # Hilfsfunktion: aktuellen Kontostand holen
 get_balance() {
-  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' | jq -r '.balance'
+  curl -sf "$BASE_URL/$USER" -H 'accept: application/json' |
+      sed -n 's/.*"balance":\([0-9]\+\).*/\1/p'
 }
 
 # Startbalance prüfen
-BALANO_COLORE=$(get_balance)
-if [[ "$BALANO_COLORE" != "0" ]]; then
-  echo -e "${RED}❌ Erwartet Balance=0, erhalten: $BALANO_COLORE${NO_COLOR}"
+BALANCE=$(get_balance)
+if [[ "$BALANCE" != "0" ]]; then
+  echo -e "${RED}❌ Erwartet Balance=0, erhalten: $BALANCE${NO_COLOR}"
   exit 1
 else
   echo -e "${GREEN}✅ Startbalance korrekt: 0${NO_COLOR}"
@@ -51,9 +52,9 @@ echo -e "${YELLOW}💰 Zahle 200 ein...${NO_COLOR}"
 curl -sf -X POST "$BASE_URL/$USER/deposit?value=200" -H 'accept: */*' -d '' > /dev/null
 
 # Neue Balance prüfen
-BALANO_COLORE=$(get_balance)
-if [[ "$BALANO_COLORE" != "200" ]]; then
-  echo -e "${RED}❌ Erwartet Balance=200, erhalten: $BALANO_COLORE${NO_COLOR}"
+BALANCE=$(get_balance)
+if [[ "$BALANCE" != "200" ]]; then
+  echo -e "${RED}❌ Erwartet Balance=200, erhalten: $BALANCE${NO_COLOR}"
   exit 1
 else
   echo -e "${GREEN}✅ Balance nach Einzahlung korrekt: 200${NO_COLOR}"
