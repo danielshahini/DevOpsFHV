@@ -80,7 +80,7 @@ jobs:
             -v "${PWD}:/docs" \
             -w /docs \
             squidfunk/mkdocs-material \
-            mkdocs build -d /docs/build/site
+            build -d /docs/build/site
           
           # Build PDF
           docker run --rm \
@@ -99,7 +99,6 @@ jobs:
           # Validierungen
           test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
-          echo "✅ Documentation and PDF successfully built!"
 
       - name: Build & push documentation image
         run: |
