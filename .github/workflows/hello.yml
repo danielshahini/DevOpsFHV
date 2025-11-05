@@ -27,12 +27,12 @@ jobs:
 
       - name: Run integration tests
         run: |
-          container_id=$(ocker run -d \
+          docker run -d \
             --name simplebankingsystem \
             --restart unless-stopped \
             --network host \
             -p 8080:8080 \
-            simplebankingsystem:latest)
+            simplebankingsystem:latest
 
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
           docker exec simplebankingsystem chmod +x /integration_test.sh
@@ -46,7 +46,7 @@ jobs:
       - name: Run SonarQube analysis inside sonar image
         run: |
           mkdir -p target
-          docker cp "$container_id":/app/target/classes ./target/classes
+          docker cp simplebankingsystem:/app/target/classes ./target/classes
           docker run --rm \
             -e SONAR_HOST_URL=http://10.0.40.193:9000/ \
             -e SONAR_TOKEN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \
