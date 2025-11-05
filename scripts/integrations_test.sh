@@ -8,7 +8,7 @@ USER="testuser"
 # Farben für bessere Lesbarkeit im CI-Log
 GREEN="\033[0;32m"
 RED="\033[0;31m"
-YELLOW="\033[1;33m"
+YELLOW="\033[38;5;226m"
 NO_COLOR="\033[0m"
 
 echo -e "${YELLOW}Warte auf Service...${NO_COLOR}"
