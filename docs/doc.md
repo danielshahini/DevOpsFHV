@@ -401,6 +401,6 @@ The project uses GitHub Actions for automated CI/CD. The pipeline triggers on ev
 - Performs health check on Spring Boot application
 - Verifies documentation site is accessible
 
-The pipeline ensures automated testing, code quality analysis, and deployment to production with zero-downtime updates.
+The pipeline ensures automated testing, code quality analysis, and deployment to production with almost zero-downtime updates.
 
 ---
