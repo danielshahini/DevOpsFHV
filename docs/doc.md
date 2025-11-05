@@ -36,7 +36,7 @@ The Simple Banking System follows a three-tier architecture pattern, separating 
 
 ### System Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                         User Browser                            │
 └───────────────────────┬─────────────────────────────────────────┘
@@ -355,7 +355,7 @@ The project uses GitHub Actions for automated CI/CD. The pipeline triggers on ev
 
 ### Pipeline Flow Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Push to main branch                          │
 └───────────────────────┬─────────────────────────────────────────┘
