@@ -8,8 +8,7 @@ theme:
 nav:
   - Overview: index.md
   - API:
-      - Accounts: api/accounts.md
-      - Transactions: api/transactions.md
+      - Accounts: https://http://10.0.40.194:1911/
 markdown_extensions:
   - admonition
   - toc:
