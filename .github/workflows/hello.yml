@@ -74,12 +74,15 @@ jobs:
 
       - name: Build the documentation and PDF
         run: |
+          # Build HTML docs
           docker run --rm \
             -u "$(id -u):$(id -g)" \
             -v "${PWD}:/docs" \
             -w /docs \
             squidfunk/mkdocs-material \
-            build -d /docs/build/site \
+            mkdocs build -d /docs/build/site
+          
+          # Build PDF
           docker run --rm \
             -v "${PWD}:/data" \
             -w /data \
@@ -96,7 +99,7 @@ jobs:
           # Validierungen
           test -f build/site/index.html || (echo "MkDocs output missing!" && exit 1)
           test -f build/site/documentation.pdf || (echo "PDF output missing!" && exit 1)
-          echo "Documentation and PDF successfully built!"
+          echo "✅ Documentation and PDF successfully built!"
 
       - name: Build & push documentation image
         run: |
