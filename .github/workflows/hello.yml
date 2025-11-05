@@ -75,7 +75,7 @@ jobs:
   deploy:
     name: Deploy to production
     runs-on: self-hosted
-    needs: build_and_test   # 👈 läuft nur, wenn Build erfolgreich war
+    needs: build_and_test
     environment:
       name: production
       url: http://10.0.40.194:1911
@@ -107,5 +107,5 @@ jobs:
 
       - name: Verify deployment
         run: |
-          curl -f http://10.0.40.194:1911/actuator/health && echo "✅ Spring Boot app is live!"
-          curl -f http://10.0.40.194:1912/index.html && echo "✅ Documentation is live!"
+          curl -f http://10.0.40.194:1911/actuator/health && echo "Spring Boot app is live!"
+          curl -f http://10.0.40.194:1912/index.html && echo "Documentation is live!"
