@@ -39,6 +39,7 @@ jobs:
       - name: Build image & Run backend
         run: |
           docker stop simplebankingsystem
+          docker rm simplebankingsystem
           docker build . -f Dockerfile \
             -t simplebankingsystem:latest \
             -t simplebankingsystem:$(date +%s)
