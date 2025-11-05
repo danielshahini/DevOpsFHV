@@ -45,8 +45,9 @@ jobs:
 
       - name: Run SonarQube analysis inside sonar image
         run: |
+          container_id=$(docker create simplebankingsystem-build)
           mkdir -p target
-          docker cp simplebankingsystem:/SimpleBankingSystem/target/classes ./target/classes
+          docker cp "$container_id":/app/target/classes ./target/classes
           docker run --rm \
             -e SONAR_HOST_URL=http://10.0.40.193:9000/ \
             -e SONAR_TOKEN=sqp_e21c5018f36294766e460f3e4f4891c1d12f1f97 \
