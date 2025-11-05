@@ -1,20 +1,18 @@
-site_name: My Project Documentation
-
-nav:
-  - Home: doc.md
-
+site_name: Simple Banking System
 theme:
   name: material
   features:
-    - toc.integrate
+    - navigation.expand
     - navigation.sections
-    - navigation.indexes
+    - content.code.copy
+nav:
+  - Overview: index.md
+  - API:
+      - Accounts: api/accounts.md
+      - Transactions: api/transactions.md
 markdown_extensions:
+  - admonition
   - toc:
       permalink: true
-      toc_depth: 3
-  - admonition
-  - footnotes
-  - tables
-  - attr_list
-  - md_in_html
+plugins:
+  - search
