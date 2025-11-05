@@ -21,18 +21,18 @@ jobs:
 
       - name: Build backend image
         run: |
-          container_id=$(docker build . -f Dockerfile \
+          docker build . -f Dockerfile \
             -t simplebankingsystem:latest \
-            -t simplebankingsystem:$(date +%s))
+            -t simplebankingsystem:$(date +%s)
 
       - name: Run integration tests
         run: |
-          docker run -d \
+          container_id=$(ocker run -d \
             --name simplebankingsystem \
             --restart unless-stopped \
             --network host \
             -p 8080:8080 \
-            simplebankingsystem:latest
+            simplebankingsystem:latest)
 
           docker cp ./scripts/integration_test.sh simplebankingsystem:/integration_test.sh
           docker exec simplebankingsystem chmod +x /integration_test.sh
