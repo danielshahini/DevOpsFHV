@@ -71,10 +71,8 @@ jobs:
       - name: Set file and folder permissions to local user
         run: |
           docker run --rm -v "${PWD}":/project bash:latest chown --recursive $(id -u):$(id -g) /project
-
       - name: Build the html documentation and PDF
         run: |
-          
            docker run --rm \
             -u "$(id -u):$(id -g)" \
             -v "${PWD}:/docs" \
