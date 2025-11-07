@@ -9,6 +9,7 @@ nav:
   - API: http://10.0.40.191:8080/swagger-ui/index.html
   - App: http://10.0.40.194:1911/
   - SonarQube: http://10.0.40.193:9000/dashboard?id=simplebankingsystem
+  - Github: https://github.com/danielshahini/DevOpsFHV/
 markdown_extensions:
   - admonition
   - toc:
